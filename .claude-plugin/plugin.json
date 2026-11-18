@@ -1,0 +1,49 @@
+{
+  "name": "usage-battery-solo",
+  "version": "1.1.0-solo.1",
+  "description": "Only the Clawd + battery card on the Claude Desktop background, no full-window green theme",
+  "userConfig": {
+    "position": {
+      "type": "string",
+      "title": "Position",
+      "description": "Where the battery sits on the window",
+      "options": [
+        "top-right",
+        "right",
+        "bottom-right",
+        "top-left",
+        "left",
+        "bottom-left"
+      ],
+      "default": "bottom-right"
+    },
+    "size": {
+      "type": "string",
+      "title": "Size",
+      "description": "How big the battery card is",
+      "options": [
+        "tiny",
+        "small",
+        "medium",
+        "large",
+        "xlarge"
+      ],
+      "default": "large"
+    },
+    "opacity": {
+      "type": "string",
+      "title": "Card background",
+      "description": "How solid the card's dark background is",
+      "options": [
+        "solid",
+        "normal",
+        "glass"
+      ],
+      "default": "normal"
+    }
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Handsher"
+  }
+}
