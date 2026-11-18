@@ -147,25 +147,33 @@ function card(u, now) {
 
 // ---------- the scene: ONLY the card, the rest of the window stays transparent ----------
 let CARD_OPACITY = 0.9
-// where each spot sits in the 1600 × 1000 scene, and which edges it hugs (the left ones clear the sidebar)
-const SPOT_AT = { 'top-right': { x: 1552, y: 48, h: 'r', v: 't' }, right: { x: 1552, y: 380, h: 'r', v: 'm' }, left: { x: 360, y: 380, h: 'l', v: 'm' }, 'bottom-right': { x: 1552, y: 790, h: 'r', v: 'b' }, 'top-left': { x: 360, y: 48, h: 'l', v: 't' }, 'bottom-left': { x: 360, y: 790, h: 'l', v: 'b' } }
-const SIZES = { tiny: 0.6, small: 0.8, medium: 1, large: 1.3, xlarge: 1.6 }
+// where each spot sits in the 1600 x 1000 scene: cx is the card's centre, in the free strip beside the chat column
+// (right of it, or left of it between the sidebar and the chat), never in the far corner or under the header
+const SPOT_AT = {
+  right: { cx: 1420, y: 500, h: 'r', v: 'm' }, 'top-right': { cx: 1420, y: 120, h: 'r', v: 't' }, 'bottom-right': { cx: 1420, y: 700, h: 'r', v: 'b' },
+  left: { cx: 410, y: 500, h: 'l', v: 'm' }, 'top-left': { cx: 410, y: 120, h: 'l', v: 't' }, 'bottom-left': { cx: 410, y: 700, h: 'l', v: 'b' },
+}
+const SIZES = { tiny: 0.5, small: 0.62, medium: 0.75, large: 0.88, xlarge: 1 }
 const RATIOS = [[0.5, 1], [1, 1.15], [1.15, 1.3], [1.3, 1.45], [1.45, 1.6], [1.6, 1.8], [1.8, 2.05], [2.05, 2.4], [2.4, 3.2], [3.2, 9]]
 const ratio = r => `${Math.round(r * 1000)}/1000`
 function scene(u, now, spot, size, opacity) {
   CARD_OPACITY = { solid: 1, normal: 0.9, glass: 0.62 }[opacity] ?? 0.9
-  const at = SPOT_AT[spot] ?? SPOT_AT['top-right'], k = SIZES[size] ?? 1
+  const at = SPOT_AT[spot] ?? SPOT_AT.right, k = SIZES[size] ?? SIZES.medium
   let fg = '', css = ''
   if (u) {
     const c = card(u, now), w = 300 * k, h = c.h * k
-    const x = at.h === 'r' ? at.x - w : at.x, y = at.v === 'b' ? at.y + 160 - h : at.v === 'm' ? 500 - h / 2 : at.y
-    fg = `<g class="cb-at"><g transform="translate(${n2(x)} ${n2(y)}) scale(${k})">${c.body}</g></g>`
+    const x = at.cx - w / 2, y = at.v === 'b' ? at.y + 160 - h : at.v === 'm' ? 500 - h / 2 : at.y
+    fg = `<g class="cb-at"><g class="cb-nudge"><g transform="translate(${n2(x)} ${n2(y)}) scale(${k})">${c.body}</g></g></g>`
     // a window narrower than the scene cuts its sides; a wider one, its top and foot: keep the card in the corner
     for (const [lo, hi] of RATIOS) {
       const dx = hi <= 1.6 ? (at.h === 'r' ? 500 * lo - 800 : 800 - 500 * lo) : 0
       const dy = lo >= 1.6 ? (at.v === 't' ? 500 - 800 / hi : at.v === 'b' ? 800 / hi - 500 : 0) : 0
       if (dx || dy) css += `@media (min-aspect-ratio:${ratio(lo)}) and (max-aspect-ratio:${ratio(hi)}){.cb-at{transform:translate(${n2(dx)}px,${n2(dy)}px)}}`
     }
+    // the chat column keeps its width in pixels, so in a narrow window the strip on its right is thinner:
+    // there the card moves a little toward the window's edge to keep clear of the chat
+    if (at.h === 'r') css += '@media (min-aspect-ratio:1600/1000) and (max-width:1500px){.cb-nudge{transform:translateX(28px)}}'
+      + '@media (min-aspect-ratio:1600/1000) and (max-width:1300px){.cb-nudge{transform:translateX(51px)}}'
   }
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">'
     + `<style>${css}</style><g font-family="-apple-system,system-ui,sans-serif">${fg}</g></svg>`
@@ -186,7 +194,9 @@ export const register = (on, options) => {
   on('session.measure', ($, e, next) => { $.ui.invalidate('ui.render'); return next(e) })
   on('ui.render', { component: 'Backdrop' }, async ($, e, next) => {
     if (e.props.plugin !== $.plugin.name || e.props.scene !== SCENE) return next(e)
-    if (e.surface !== 'desktop' && e.surface !== 'mobile') return next(e)
+    // a phone has no free strip beside the chat: there the card would sit behind the messages, so it shows
+    // on the desktop app only, unless the person turns it on for the phone too
+    if (e.surface !== 'desktop' && !(e.surface === 'mobile' && options?.mobile === 'show')) return next(e)
     let u = null
     try { u = await $.session.usage() } catch {} // no figures yet: the ground alone
     const { Svg } = $.ui.resolve(e)

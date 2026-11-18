@@ -6,16 +6,16 @@
     "position": {
       "type": "string",
       "title": "Position",
-      "description": "Where the battery sits on the window",
+      "description": "Where the card sits: beside the chat column, on its right or its left",
       "options": [
-        "top-right",
         "right",
+        "top-right",
         "bottom-right",
-        "top-left",
         "left",
+        "top-left",
         "bottom-left"
       ],
-      "default": "bottom-right"
+      "default": "right"
     },
     "size": {
       "type": "string",
@@ -28,7 +28,7 @@
         "large",
         "xlarge"
       ],
-      "default": "large"
+      "default": "medium"
     },
     "opacity": {
       "type": "string",
@@ -40,6 +40,16 @@
         "glass"
       ],
       "default": "normal"
+    },
+    "mobile": {
+      "type": "string",
+      "title": "On the phone",
+      "description": "Also show the card in the Claude mobile app (it sits behind the messages there)",
+      "options": [
+        "hide",
+        "show"
+      ],
+      "default": "hide"
     }
   },
   "license": "MIT",

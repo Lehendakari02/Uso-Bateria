@@ -44,3 +44,10 @@ test('the terminal and another scene are left alone', async ($, on) => {
   expect((await other.find({ type: 'Text' }))?.text).toBe('engine')
   await other.unmount()
 })
+
+test('on the phone the card stays hidden unless turned on', async ($, on) => {
+  on('ui.render', ($, e) => { const { Text } = $.ui.resolve(e as any); return Text({ children: 'engine' }) })
+  const phone = await $.ui.mount({ ...BACKDROP, surface: 'mobile' })
+  expect((await phone.find({ type: 'Text' }))?.text).toBe('engine')
+  await phone.unmount()
+})
