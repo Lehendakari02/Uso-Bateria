@@ -1,6 +1,6 @@
 # Uso-Bateria 🔋
 
-Clawd, la mascota de Claude, al lado de una **batería pixelada** que te dice cuánto te queda de tu uso **semanal** de Claude. Vive en un **mini panel** de **Claude Desktop** que la propia app coloca en una esquina del chat. Cuando abres o cierras paneles se recoloca solo, y funciona con cualquier fondo o tema que tengas.
+Clawd, la mascota de Claude, al lado de una **batería pixelada** que te dice cuánto te queda de tu uso **semanal** de Claude. Aparece en las sesiones de **Claude Code** de la app de escritorio: en un **mini panel** que la propia app coloca en una esquina del chat y recoloca al abrir o cerrar paneles, o, donde no hay paneles, **pintada en el fondo** de la ventana. Todo se ajusta escribiendo `/bateria-ajustes`.
 
 ![Uso-Bateria en un chat](assets/chat.png)
 
@@ -30,7 +30,7 @@ Clawd, la mascota de Claude, al lado de una **batería pixelada** que te dice cu
 ## Dónde funciona
 
 - ✅ En las sesiones de **Claude Code** de la app de escritorio (la pestaña **Code**) que trabajan en una carpeta de **tu ordenador**.
-- ❌ En las **conversaciones normales** de Claude: allí los plugins solo aportan habilidades y conectores, no pueden dibujar paneles.
+- ❌ En las **conversaciones normales** de Claude: allí la app no ejecuta el código de los plugins (solo usa sus habilidades y conectores), así que no se puede dibujar nada, ni panel ni fondo.
 - ❌ En la terminal no se dibuja (solo sale una línea de texto con el porcentaje).
 - ❔ En las sesiones de Claude Code **en la nube** solo funcionaría si el plugin estuviera instalado en ese entorno; está sin probar.
 
@@ -50,17 +50,17 @@ Además:
 - **En la fila de abajo** (`5H`) está el límite de 5 horas y a qué hora se recarga (`60% · recarga 13:00`).
 - Los números se actualizan después de cada respuesta de Claude, y el reloj cada minuto.
 
-## Dos modos
+## Tres modos
 
-| | **Panel** (por defecto) | **Fondo** |
-| --- | --- | --- |
-| Dónde sale | Un mini panel que la app coloca en una esquina del chat | Pintado en el fondo de la ventana |
-| Paneles abiertos (Hilos, Contexto…) | La app lo recoloca para que no se tape | Un panel abierto lo puede tapar |
-| Fondos y temas | Compatible con cualquiera | Ocupa el fondo: no se puede combinar con otro tema que ponga fondo |
-| Cómo se mueve | Lo coloca la app; lo puedes minimizar o ampliar | Con `/bateria-mover` y un clic, o con la opción **Position** |
-| Tamaño | Fijo en píxeles | Crece con la ventana |
+| | **Auto** (por defecto) | **Panel** | **Fondo** |
+| --- | --- | --- | --- |
+| Dónde sale | En el mini panel; si la app no lo muestra, en el fondo | Siempre en el mini panel | Siempre pintado en el fondo de la ventana |
+| Paneles abiertos (Hilos, Contexto…) | La app recoloca el mini panel | La app lo recoloca | Un panel abierto lo puede tapar |
+| Fondos y temas | Compatible, salvo si tiene que pasar al fondo | Compatible con cualquiera | Ocupa el fondo: no se combina con otro tema que ponga fondo |
+| Cómo se mueve | Lo coloca la app (en el fondo, con `/bateria-mover`) | Lo coloca la app | Con `/bateria-mover` y un clic, o con la posición |
+| Tamaño | Fijo en píxeles (en el fondo, crece con la ventana) | Fijo en píxeles | Crece con la ventana |
 
-El modo se cambia en los ajustes, en la opción **Mode**.
+Para cambiar de modo: `/bateria-ajustes modo panel` (o `auto`, `fondo`). Se aplica al momento.
 
 ## Instalación
 
@@ -134,18 +134,50 @@ Se escriben en el chat:
 | Comando | Qué hace |
 | --- | --- |
 | `/bateria` | Vuelve a abrir el mini panel si lo has cerrado. |
-| `/bateria-mover` | **Modo fondo:** la batería se marca con un borde que parpadea y el aviso *"Haz clic donde quieras ponerme"*. El siguiente clic en un hueco vacío de la ventana la coloca ahí. Escríbelo otra vez para cancelar. |
-| `/bateria-reset` | **Modo fondo:** devuelve la batería a la posición de los ajustes. |
+| `/bateria-ajustes` | Muestra los ajustes y los cambia al momento (ver **Ajustes**). |
+| `/bateria-mover` | **En el fondo:** la batería se marca con un borde que parpadea y el aviso *"Haz clic donde quieras ponerme"*. El siguiente clic en un hueco vacío de la ventana la coloca ahí. Escríbelo otra vez para cancelar. |
+| `/bateria-reset` | **En el fondo:** devuelve la batería a la posición de los ajustes. |
 
 ![Moviendo la batería con /bateria-mover](assets/mover.png)
 
-El sitio que eliges con `/bateria-mover` se recuerda aunque cierres la app, hasta que uses `/bateria-reset` o cambies **Position** en los ajustes. No hace falta tocar la batería primero, y un clic normal nunca la mueve: solo el clic que viene después de `/bateria-mover`.
+El sitio que eliges con `/bateria-mover` se recuerda aunque cierres la app, hasta que uses `/bateria-reset` o cambies la posición en los ajustes. No hace falta tocar la batería primero, y un clic normal nunca la mueve: solo el clic que viene después de `/bateria-mover`.
 
 ## Ajustes
 
-Se cambian de cualquiera de estas formas. Después de cambiar algo, abre una sesión nueva para verlo.
+### Desde el chat: `/bateria-ajustes` (lo más fácil)
 
-- **En la app:** **Plugins** → **Uso bateria** → sus ajustes.
+Escribe `/bateria-ajustes` y verás los ajustes actuales. Para cambiar uno, añade el ajuste y el valor; puedes usar palabras en castellano:
+
+```
+/bateria-ajustes tamaño grande
+```
+
+```
+/bateria-ajustes estilo compacto posición abajo-izquierda
+```
+
+```
+/bateria-ajustes modo fondo
+```
+
+Los cambios se ven al momento y se guardan para las próximas sesiones. Para volver a los ajustes del plugin: `/bateria-ajustes reset`.
+
+| Ajuste | Valores | Por defecto |
+| --- | --- | --- |
+| `modo` | `auto`, `panel`, `fondo` | `auto` |
+| `posición` (en el fondo) | `abajo-derecha`, `derecha`, `arriba-derecha`, `abajo-izquierda`, `izquierda`, `arriba-izquierda` | `abajo-derecha` |
+| `tamaño` | `diminuto`, `pequeño`, `mediano`, `grande`, `muy-grande` | `pequeño` |
+| `estilo` | `completo`, `compacto` | `completo` |
+| `opacidad` (del recuadro) | `solid`, `normal`, `cristal` | `normal` |
+| `idioma` | `español`, `inglés` | `español` |
+| `móvil` | `ocultar`, `mostrar` | `ocultar` |
+
+También valen los nombres en inglés (`size large`, `style compact`, `position bottom-left`…).
+
+### Desde la configuración del plugin
+
+Son los mismos ajustes, en inglés (`mode`, `position`, `size`, `style`, `opacity`, `language`, `mobile`). Lo que cambies con `/bateria-ajustes` tiene prioridad. Después de cambiarlos, abre una sesión nueva.
+
 - **En el chat de Claude Code:**
   ```
   /plugin configure uso-bateria@uso-bateria
@@ -159,23 +191,15 @@ Se cambian de cualquiera de estas formas. Después de cambiar algo, abre una ses
   echo '{"size":"medium","style":"full"}' | claude plugin configure uso-bateria@uso-bateria --values-stdin
   ```
 
-| Opción | Valores | Por defecto |
-| --- | --- | --- |
-| **Mode** (modo) | `panel`, `fondo` | `panel` |
-| **Position** (posición, modo fondo) | `bottom-right`, `right`, `top-right`, `bottom-left`, `left`, `top-left` | `bottom-right` |
-| **Size** (tamaño) | `tiny`, `small`, `medium`, `large`, `xlarge` | `small` |
-| **Style** (estilo) | `full`, `compact` | `full` |
-| **Card background** (fondo del recuadro) | `solid`, `normal`, `glass` | `normal` |
-| **Language** (idioma del recuadro) | `es`, `en` | `es` |
-| **On the phone** (en el móvil) | `hide`, `show` | `hide` |
+> La página **Plugins** de la app solo muestra el resumen y los archivos del plugin, no sus ajustes: usa `/bateria-ajustes`.
 
 ### Tamaños
 
-En modo panel cada tamaño tiene un ancho fijo, sea cual sea la ventana:
+En el mini panel cada tamaño tiene un ancho fijo, sea cual sea la ventana:
 
 ![Tamaños](assets/size.png)
 
-En modo fondo el recuadro crece con la ventana: `small` mide unos 220 px de ancho en un monitor de 1920 px.
+En el fondo el recuadro crece con la ventana: `pequeño` mide unos 220 px de ancho en un monitor de 1920 px.
 
 ### Estilo
 
@@ -184,9 +208,9 @@ En modo fondo el recuadro crece con la ventana: `small` mide unos 220 px de anch
 
 ![Estilo compacto](assets/compact.png)
 
-### Posiciones (modo fondo)
+### Posiciones (en el fondo)
 
-En modo fondo, el recuadro va **en el hueco libre al lado del chat**: entre el chat y el borde derecho (las `right`) o entre la barra lateral y el chat (las `left`). Las `bottom` lo ponen a la altura de la caja donde escribes; las `top` lo suben, sin meterlo debajo de la barra de arriba. Si ninguna te encaja, usa `/bateria-mover`.
+En el fondo, el recuadro va **en el hueco libre al lado del chat**: entre el chat y el borde derecho (las `right`) o entre la barra lateral y el chat (las `left`). Las `bottom` lo ponen a la altura de la caja donde escribes; las `top` lo suben, sin meterlo debajo de la barra de arriba. Si ninguna te encaja, usa `/bateria-mover`.
 
 ![Posiciones en modo fondo](assets/pos.png)
 
@@ -204,7 +228,7 @@ Los textos del recuadro salen **en castellano** (`USO SEMANAL`, `QUEDA`, `renuev
 
 ### En el móvil
 
-En la app del móvil no hay sitio libre al lado del chat, así que la batería viene **oculta** (`hide`). Si la quieres ver, pon `show`.
+En la app del móvil no hay sitio libre al lado del chat, así que la batería viene **oculta** (`hide`). Si la quieres ver: `/bateria-ajustes móvil mostrar`.
 
 ## Preguntas frecuentes
 
@@ -215,7 +239,10 @@ No. Solo lee los números de uso que Claude ya tiene y no llama a la IA. Tampoco
 Con un plan Pro o Max, el límite semanal. Si usas Claude con una clave de API (sin límites de plan), muestra cuánto te queda de la ventana de contexto.
 
 **¿La puedo arrastrar con el ratón?**
-No: la app no avisa a los plugins cuando arrastras el ratón. En modo panel la coloca la app. En modo fondo, usa `/bateria-mover` y haz clic donde la quieras.
+No: la app no avisa a los plugins cuando arrastras el ratón. En el mini panel la coloca la app. En el fondo, usa `/bateria-mover` y haz clic donde la quieras.
+
+**¿Sale en las conversaciones normales de Claude?**
+No. Allí la app no ejecuta el código de los plugins, ni para paneles ni para fondos. Solo en Claude Code.
 
 **He cerrado el mini panel, ¿cómo lo recupero?**
 Escribe `/bateria`, o abre una sesión nueva.
@@ -227,7 +254,7 @@ Escribe `/bateria`, o abre una sesión nueva.
 4. En la terminal, `claude plugin list` debe mostrar `uso-bateria@uso-bateria` como *enabled*.
 
 **¿Funciona con otros temas o fondos?**
-En modo panel, sí, con cualquiera. En modo fondo, la batería ocupa el fondo de la ventana, y ahí solo cabe una cosa: si otro plugin pone un fondo o una foto, se pisan y solo se ve uno.
+En el mini panel, sí, con cualquiera. En el fondo, la batería ocupa el fondo de la ventana, y ahí solo cabe una cosa: si otro plugin pone un fondo o una foto, se pisan y solo se ve uno.
 
 **¿Y si en mi sistema está activado "reducir movimiento"?**
 Clawd y la batería se quedan quietos.
@@ -237,7 +264,7 @@ En **+** → **Plugins**, desactiva o elimina `uso-bateria`, o escribe `claude p
 
 ## Estado
 
-Es un proyecto en marcha. El modo panel y `/bateria-mover` son nuevos y aún se están probando en la app real. Si algo no se ve bien, abre un *issue* en este repositorio con una captura.
+Es un proyecto en marcha. El modo auto, el mini panel, `/bateria-ajustes` y `/bateria-mover` son nuevos y aún se están probando en la app real. Si algo no se ve bien, abre un *issue* en este repositorio con una captura.
 
 ## Créditos
 

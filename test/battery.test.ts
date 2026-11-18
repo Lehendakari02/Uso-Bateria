@@ -25,7 +25,7 @@ const engine = (on: any, week: () => number) => {
   mock.store(on)
 }
 
-test('panel mode (the default): opens a small panel and sets no theme', async ($, on) => {
+test('auto mode (the default): opens a small panel and, shown, sets no theme', async ($, on) => {
   mock.clock(on, { now: NOW })
   let opened: any = null, sets = 0
   on('ui.open', (_: unknown, e: any) => ((opened = e), { value: { isPlaced: true } }))
@@ -129,4 +129,42 @@ test('panel mode: the first message opens the panel again, once', async ($, on) 
   await $.prompt.submit({ text: 'hola' } as any)
   await $.prompt.submit({ text: 'otra' } as any)
   expect(opens).toBe(2)
+})
+
+test('auto mode: where the app shows no panel, the card goes on the background', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  let sets = 0
+  on('ui.open', () => ({ value: { isPlaced: false, reason: 'no panes here' } }))
+  on('theme.set', () => (sets++, { value: { isDrawn: true, requestId: 'bg' } }))
+  engine(on, () => 30)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  expect(sets).toBe(1)
+  const ui = await $.ui.mount({ ...BACKDROP, surface: 'desktop' })
+  expect(await source(ui)).toContain('USO SEMANAL')
+  await ui.unmount()
+})
+
+test('/bateria-ajustes lists the settings and changes them, in Spanish words too', async ($, on) => {
+  const clock = mock.clock(on, { now: NOW })
+  on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('theme.set', () => ({ value: { isDrawn: true, requestId: 'bg' } }))
+  on('ui.close', () => ({}))
+  engine(on, () => 30)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  const list = String(((await $.command.run({ command: 'bateria-ajustes', args: '' } as any)) as any)?.text)
+  expect(list).toContain('tamaño: small')
+
+  const changed = String(((await $.command.run({ command: 'bateria-ajustes', args: 'tamaño grande estilo compacto' } as any)) as any)?.text)
+  expect(changed).toContain('tamaño: large')
+  expect(changed).toContain('estilo: compact')
+  await clock.settle()
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect((await ui.find({ type: 'Svg' }))?.props?.width).toBe(300)
+  await ui.unmount()
+
+  const bad = String(((await $.command.run({ command: 'bateria-ajustes', args: 'tamaño gigante' } as any)) as any)?.text)
+  expect(bad).toContain('no vale para tamaño')
+
+  const reset = String(((await $.command.run({ command: 'bateria-ajustes', args: 'reset' } as any)) as any)?.text)
+  expect(reset).toContain('borrados')
 })

@@ -6,17 +6,18 @@
     "mode": {
       "type": "string",
       "title": "Mode",
-      "description": "panel: a small panel the app places and moves as panels open and close, beside any background. fondo: painted on the window background, placed with Position or /bateria-mover",
+      "description": "auto: the small panel, or the window background where the app shows no panel. panel: always the small panel. fondo: always the background. Also /bateria-ajustes modo …",
       "options": [
+        "auto",
         "panel",
         "fondo"
       ],
-      "default": "panel"
+      "default": "auto"
     },
     "position": {
       "type": "string",
       "title": "Position",
-      "description": "Mode fondo only: where the card sits beside the chat column; the bottom spots sit level with the prompt box. /bateria-mover places it with a click",
+      "description": "On the background: where the card sits beside the chat column; the bottom spots sit level with the prompt box. /bateria-mover places it with a click",
       "options": [
         "bottom-right",
         "right",

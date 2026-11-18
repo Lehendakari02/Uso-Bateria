@@ -246,6 +246,40 @@ function cardLine(u, now, lang) {
   const left = main ? Math.max(0, Math.min(100, Math.round(100 - main.percentUsed))) : Math.max(0, Math.min(100, Math.round(100 - (u.context?.percent ?? 0))))
   return `${week ? L.week : five ? L.five : L.ctx}: ${left}% ${L.left.toLowerCase()}`
 }
+// ---------- the settings: the plugin's options, with what /bateria-ajustes changed on top ----------
+const CHOICES = {
+  mode: ['auto', 'panel', 'fondo'],
+  position: ['bottom-right', 'right', 'top-right', 'bottom-left', 'left', 'top-left'],
+  size: ['tiny', 'small', 'medium', 'large', 'xlarge'],
+  style: ['full', 'compact'],
+  opacity: ['solid', 'normal', 'glass'],
+  language: ['es', 'en'],
+  mobile: ['hide', 'show'],
+}
+const DEFAULTS = { mode: 'auto', position: 'bottom-right', size: 'small', style: 'full', opacity: 'normal', language: 'es', mobile: 'hide' }
+// the Spanish words a person may type for a setting or a value
+const KEY_ALIAS = { modo: 'mode', posicion: 'position', 'posición': 'position', sitio: 'position', 'tamaño': 'size', tamano: 'size', estilo: 'style', opacidad: 'opacity', fondo: 'opacity', idioma: 'language', movil: 'mobile', 'móvil': 'mobile' }
+const VALUE_ALIAS = {
+  automatico: 'auto', 'automático': 'auto',
+  'abajo-derecha': 'bottom-right', derecha: 'right', 'arriba-derecha': 'top-right', 'abajo-izquierda': 'bottom-left', izquierda: 'left', 'arriba-izquierda': 'top-left',
+  diminuto: 'tiny', 'pequeño': 'small', pequeno: 'small', mediano: 'medium', grande: 'large', 'muy-grande': 'xlarge', enorme: 'xlarge',
+  completo: 'full', compacto: 'compact', solido: 'solid', 'sólido': 'solid', cristal: 'glass',
+  ocultar: 'hide', oculto: 'hide', mostrar: 'show', visible: 'show', 'español': 'es', espanol: 'es', 'inglés': 'en', ingles: 'en',
+}
+const SETTINGS = 'settings' // $.store: what /bateria-ajustes changed
+const LABEL = { mode: 'modo', position: 'posición', size: 'tamaño', style: 'estilo', opacity: 'opacidad', language: 'idioma', mobile: 'móvil' }
+async function settingsOf($, options) {
+  let saved = {}
+  try { const v = await $.store.get(SETTINGS); if (v && typeof v === 'object') saved = v } catch {}
+  const out = {}
+  for (const k of Object.keys(CHOICES)) {
+    const v = saved[k] ?? options?.[k]
+    out[k] = CHOICES[k].includes(v) ? v : DEFAULTS[k]
+  }
+  return out
+}
+const sayIn = (lang, es, en) => (lang === 'en' ? en : es)
+
 // ---------- the mod ----------
 const SCENE = 'uso-bateria'
 const PANE = 'bateria'
@@ -253,67 +287,125 @@ const PLACE = 'place' // $.store: { fx, fy, position }, where /bateria-mover put
 const MOVING = 'moving' // $.store: true while /bateria-mover waits for the click
 let timer = null
 // the panel asks to start small (a widget in a corner of the chat area) and paints nothing under the card
-function openPane($, title) {
-  return $.ui.open({ id: PANE, title, placement: 'widget', backgroundColor: 'transparent' })
+function openPane($, lang) {
+  return $.ui.open({ id: PANE, title: sayIn(lang, 'Batería', 'Battery'), placement: 'widget', backgroundColor: 'transparent' })
+}
+// the background needs the theme's backdrop: set once a session, as a set replaces the whole theme
+function setBackdrop($) {
+  return $.theme.set({ backdrop: { scene: SCENE, glass: false } })
 }
 export const register = (on, options) => {
-  const mode = options?.mode === 'fondo' ? 'fondo' : 'panel'
-  const lang = options?.language
-  const say = (es, en) => ((TEXT[lang] ?? TEXT.es) === TEXT.en ? en : es)
+  // this session's state: whether the backdrop is set, and whether the app shows the panel
+  let fondoOn = false, paneShown = false, askedOpen = false
 
   on('session.start', async ($, e, next) => {
-    if (mode === 'fondo') {
-      // the theme is set once: a set replaces the whole theme, so setting it again would wipe another mod's colors
-      // no green ground and no forced dark mode: the app keeps its own colors and light/dark mode
-      await $.theme.set({ backdrop: { scene: SCENE, glass: false } })
-    } else {
+    const s = await settingsOf($, options)
+    if (s.mode === 'fondo') { await setBackdrop($); fondoOn = true }
+    else {
       // the panel touches no theme: it sits beside any background, and the app moves it as panels open and close
-      void openPane($, say('Batería', 'Battery'))
+      const r = await openPane($, s.language).catch(() => null)
+      paneShown = r?.isPlaced === true
+      // auto: where the app does not show the panel, the card goes on the background instead
+      if (s.mode === 'auto' && !paneShown) { await setBackdrop($); fondoOn = true }
     }
     await $.store.delete(MOVING) // a move left waiting in an earlier session is dropped
-    await $.command.register({ name: 'bateria', description: say('Abre la batería si la cerraste', 'Open the battery if you closed it') })
-    await $.command.register({ name: 'bateria-mover', description: say('Mueve la batería: el siguiente clic en un hueco vacío la coloca (modo fondo)', 'Move the battery: the next click on an empty spot places it (background mode)') })
-    await $.command.register({ name: 'bateria-reset', description: say('Devuelve la batería a la posición de los ajustes (modo fondo)', 'Put the battery back where the settings say (background mode)') })
+    const l = s.language
+    await $.command.register({ name: 'bateria', description: sayIn(l, 'Abre la batería si la cerraste', 'Open the battery if you closed it') })
+    await $.command.register({ name: 'bateria-ajustes', description: sayIn(l, 'Cambia la batería: tamaño, posición, estilo, modo, idioma…', 'Change the battery: size, position, style, mode, language…'), argumentHint: sayIn(l, '[ajuste valor]', '[setting value]') })
+    await $.command.register({ name: 'bateria-mover', description: sayIn(l, 'Mueve la batería: el siguiente clic en un hueco vacío la coloca (en el fondo)', 'Move the battery: the next click on an empty spot places it (on the background)') })
+    await $.command.register({ name: 'bateria-reset', description: sayIn(l, 'Devuelve la batería a la posición de los ajustes', 'Put the battery back where the settings say') })
     timer ??= $.clock.every(60000, () => $.ui.invalidate('ui.render')) // the reset clock moves each minute
     return next(e)
   })
 
   on('command.run', { command: 'bateria' }, async $ => {
-    if (mode === 'fondo') return { text: say('La batería está en el fondo de la ventana (modo fondo). Para cambiarla de sitio, usa /bateria-mover.', 'The battery is on the window background (background mode). To move it, use /bateria-mover.') }
-    await openPane($, say('Batería', 'Battery'))
-    return { text: say('Batería abierta.', 'Battery opened.') }
+    const s = await settingsOf($, options), l = s.language
+    if (s.mode === 'fondo') return { text: sayIn(l, 'La batería está en el fondo de la ventana (modo fondo). Para cambiarla de sitio, usa /bateria-mover.', 'The battery is on the window background (fondo mode). To move it, use /bateria-mover.') }
+    const r = await openPane($, l).catch(() => null)
+    if (r?.isPlaced === true) { paneShown = true; $.ui.invalidate('ui.render'); return { text: sayIn(l, 'Batería abierta.', 'Battery opened.') } }
+    if (!fondoOn) { await setBackdrop($); fondoOn = true }
+    $.ui.invalidate('ui.render')
+    return { text: sayIn(l, 'La app no muestra paneles aquí, así que la batería va en el fondo de la ventana.', 'The app shows no panels here, so the battery goes on the window background.') }
   })
+
+  on('command.run', { command: 'bateria-ajustes' }, async ($, e) => {
+    const before = await settingsOf($, options)
+    const words = String(e.args ?? '').trim().toLowerCase().split(/\s+/).filter(Boolean)
+    let saved = {}
+    try { const v = await $.store.get(SETTINGS); if (v && typeof v === 'object') saved = { ...v } } catch {}
+    const l0 = before.language
+    if (words[0] === 'reset' || words[0] === 'restablecer') {
+      await $.store.delete(SETTINGS)
+      $.ui.invalidate('ui.render')
+      return { text: sayIn(l0, 'Ajustes de /bateria-ajustes borrados: vuelven los del plugin.', 'Settings from /bateria-ajustes cleared: the plugin options are back.') }
+    }
+    const errors = []
+    for (let n = 0; n + 1 < words.length; n += 2) {
+      const key = KEY_ALIAS[words[n]] ?? words[n], value = VALUE_ALIAS[words[n + 1]] ?? words[n + 1]
+      if (!CHOICES[key]) { errors.push(sayIn(l0, `No conozco el ajuste "${words[n]}".`, `Unknown setting "${words[n]}".`)); continue }
+      if (!CHOICES[key].includes(value)) { errors.push(sayIn(l0, `"${words[n + 1]}" no vale para ${LABEL[key]}: usa ${CHOICES[key].join(', ')}.`, `"${words[n + 1]}" is not a ${key}: use ${CHOICES[key].join(', ')}.`)); continue }
+      saved[key] = value
+    }
+    if (words.length % 2 === 1) errors.push(sayIn(l0, `Falta el valor de "${words[words.length - 1]}".`, `"${words[words.length - 1]}" needs a value.`))
+    if (words.length > 1) await $.store.set(SETTINGS, saved)
+    const s = await settingsOf($, options), l = s.language
+    // a new mode takes effect at once
+    if (s.mode !== before.mode) {
+      if (s.mode === 'fondo') { await $.ui.close({ id: PANE }).catch(() => {}); paneShown = false; if (!fondoOn) { await setBackdrop($); fondoOn = true } }
+      else {
+        const r = await openPane($, l).catch(() => null)
+        paneShown = r?.isPlaced === true
+        if (s.mode === 'auto' && !paneShown && !fondoOn) { await setBackdrop($); fondoOn = true }
+      }
+    }
+    $.ui.invalidate('ui.render')
+    const list = Object.keys(CHOICES).map(k => `  ${sayIn(l, LABEL[k], k)}: ${s[k]}   (${CHOICES[k].join(' · ')})`).join('\n')
+    const help = sayIn(l,
+      'Para cambiar uno: /bateria-ajustes tamaño medium (o grande, mediano, pequeño…). Varios a la vez: /bateria-ajustes tamaño large estilo compact. Para volver a los del plugin: /bateria-ajustes reset.',
+      'To change one: /bateria-ajustes size medium. Several at once: /bateria-ajustes size large style compact. Back to the plugin options: /bateria-ajustes reset.')
+    return { text: [...errors, sayIn(l, 'Ajustes de la batería:', 'Battery settings:'), list, help].join('\n') }
+  })
+
   on('command.run', { command: 'bateria-mover' }, async $ => {
-    if (mode !== 'fondo') return { text: say('En modo panel, la app coloca la batería y la mueve sola cuando abres o cierras paneles. Para elegir tú el sitio con el ratón, pon Mode en "fondo" en los ajustes del plugin.', 'In panel mode the app places the battery and moves it as panels open and close. To choose the spot with the mouse, set Mode to "fondo" in the plugin settings.') }
+    const s = await settingsOf($, options), l = s.language
+    if (!fondoOn || paneShown) return { text: sayIn(l, 'La batería está en un mini panel, que coloca la app y que se mueve solo cuando abres o cierras paneles. Para elegir tú el sitio con el ratón, cambia al fondo: /bateria-ajustes modo fondo.', 'The battery is in a small panel the app places and moves as panels open and close. To choose the spot with the mouse, switch to the background: /bateria-ajustes mode fondo.') }
     if ((await $.store.get(MOVING)) === true) { // typed again: the move is called off
       await $.store.delete(MOVING)
       $.ui.invalidate('ui.render')
-      return { text: say('Movimiento cancelado: la batería se queda donde estaba.', 'Move cancelled: the battery stays where it was.') }
+      return { text: sayIn(l, 'Movimiento cancelado: la batería se queda donde estaba.', 'Move cancelled: the battery stays where it was.') }
     }
     await $.store.set(MOVING, true)
     $.ui.invalidate('ui.render')
-    return { text: say('Haz clic en un hueco vacío de la ventana y la batería se colocará ahí. Para cancelar, vuelve a escribir /bateria-mover.', 'Click an empty spot of the window and the battery goes there. To cancel, type /bateria-mover again.') }
+    return { text: sayIn(l, 'Haz clic en un hueco vacío de la ventana y la batería se colocará ahí. Para cancelar, vuelve a escribir /bateria-mover.', 'Click an empty spot of the window and the battery goes there. To cancel, type /bateria-mover again.') }
   })
   on('command.run', { command: 'bateria-reset' }, async $ => {
+    const s = await settingsOf($, options)
     await $.store.delete(PLACE)
     await $.store.delete(MOVING)
     $.ui.invalidate('ui.render')
-    return { text: say('La batería vuelve a la posición de los ajustes.', 'The battery is back where the settings say.') }
+    return { text: sayIn(s.language, 'La batería vuelve a la posición de los ajustes.', 'The battery is back where the settings say.') }
   })
   // while /bateria-mover waits, the next click on the bare background places the card there
   on('ui.pointer', async ($, e, next) => {
     if (e.scene !== SCENE || e.surface !== 'desktop') return next(e)
     if ((await $.store.get(MOVING)) === true) {
-      await $.store.set(PLACE, { fx: e.x, fy: e.y, position: options?.position ?? null })
+      const s = await settingsOf($, options)
+      await $.store.set(PLACE, { fx: e.x, fy: e.y, position: s.position })
       await $.store.delete(MOVING)
       $.ui.invalidate('ui.render')
     }
     return next(e)
   })
   // an app may leave a pane opened unasked undrawn; one opened with the person's first message is theirs
-  let askedOpen = false
   on('prompt.submit', async ($, e, next) => {
-    if (mode === 'panel' && !askedOpen) { askedOpen = true; void openPane($, say('Batería', 'Battery')) }
+    if (!askedOpen) {
+      askedOpen = true
+      const s = await settingsOf($, options)
+      if (s.mode !== 'fondo') {
+        const r = await openPane($, s.language).catch(() => null)
+        if (r?.isPlaced === true && !paneShown) { paneShown = true; $.ui.invalidate('ui.render') }
+      }
+    }
     return next(e)
   })
   // the figures moved (after each answer, or a window moved a point): draw the battery again
@@ -322,30 +414,32 @@ export const register = (on, options) => {
   // the panel: the card alone, at a fixed width, wherever the app seats the pane
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Text, Svg } = $.ui.resolve(e)
+    const s = await settingsOf($, options), l = s.language
     let u = null
     try { u = await $.session.usage() } catch {}
     const now = await $.clock.now()
-    if (!u) return Text({ dimColor: true, children: say('La batería aparece tras la primera respuesta.', 'The battery shows after the first answer.') })
-    if (e.surface === 'terminal' || (e.surface === 'mobile' && options?.mobile !== 'show')) return Text({ children: cardLine(u, now, lang) })
-    const w = PANEL_W[options?.size] ?? PANEL_W.small
-    return Svg({ source: cardSvg(u, now, options?.opacity, lang, options?.style), alt: (TEXT[lang] ?? TEXT.es).alt, width: w, isInteractive: true })
+    if (!u) return Text({ dimColor: true, children: sayIn(l, 'La batería aparece tras la primera respuesta.', 'The battery shows after the first answer.') })
+    if (e.surface === 'terminal' || (e.surface === 'mobile' && s.mobile !== 'show')) return Text({ children: cardLine(u, now, l) })
+    return Svg({ source: cardSvg(u, now, s.opacity, l, s.style), alt: (TEXT[l] ?? TEXT.es).alt, width: PANEL_W[s.size], isInteractive: true })
   })
 
-  // the background: the card painted in the window's backdrop (mode "fondo")
+  // the background: the card painted in the window's backdrop (mode "fondo", or "auto" where no panel shows)
   on('ui.render', { component: 'Backdrop' }, async ($, e, next) => {
     if (e.props.plugin !== $.plugin.name || e.props.scene !== SCENE) return next(e)
+    const s = await settingsOf($, options), l = s.language
+    if (s.mode === 'panel' || (s.mode === 'auto' && paneShown)) return next(e) // the panel shows it: an empty background
     // a phone has no free strip beside the chat: there the card would sit behind the messages, so it shows
     // on the desktop app only, unless the person turns it on for the phone too
-    if (e.surface !== 'desktop' && !(e.surface === 'mobile' && options?.mobile === 'show')) return next(e)
+    if (e.surface !== 'desktop' && !(e.surface === 'mobile' && s.mobile === 'show')) return next(e)
     let u = null
     try { u = await $.session.usage() } catch {} // no figures yet: nothing drawn
-    // a spot chosen with /bateria-mover holds until the person picks another Position in the settings
+    // a spot chosen with /bateria-mover holds until the person picks another position
     let place = null, moving = false
-    try { const p = await $.store.get(PLACE); if (p && typeof p.fx === 'number' && p.position === (options?.position ?? null)) place = p } catch {}
+    try { const p = await $.store.get(PLACE); if (p && typeof p.fx === 'number' && p.position === s.position) place = p } catch {}
     try { moving = e.surface === 'desktop' && (await $.store.get(MOVING)) === true } catch {}
     const { Svg } = $.ui.resolve(e)
-    const source = scene(u, await $.clock.now(), options?.position, options?.size, options?.opacity, lang, options?.style, e.surface === 'desktop' ? place : null, moving ? say('Haz clic donde quieras ponerme', 'Click where you want me') : null)
-    return Svg({ source, alt: (TEXT[lang] ?? TEXT.es).alt, isInteractive: true })
+    const source = scene(u, await $.clock.now(), s.position, s.size, s.opacity, l, s.style, e.surface === 'desktop' ? place : null, moving ? sayIn(l, 'Haz clic donde quieras ponerme', 'Click where you want me') : null)
+    return Svg({ source, alt: (TEXT[l] ?? TEXT.es).alt, isInteractive: true })
   })
 }
 export { card, compactCard, scene, cardSvg }
