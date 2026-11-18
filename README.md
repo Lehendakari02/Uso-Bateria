@@ -224,7 +224,7 @@ En el fondo, el recuadro va **en el hueco libre al lado del chat**: entre el cha
 
 ### Idioma
 
-Los textos del recuadro salen **en castellano** (`USO SEMANAL`, `QUEDA`, `renueva`, `recarga` y los días de la semana). Para verlos en inglés, pon `en` en **Language**.
+Los textos del recuadro salen **en castellano** (`USO SEMANAL`, `QUEDA`, `renueva`, `recarga` y los días de la semana). Para verlos en inglés: `/bateria-ajustes idioma inglés`.
 
 ### En el móvil
 
