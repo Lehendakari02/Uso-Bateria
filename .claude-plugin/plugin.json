@@ -6,16 +6,16 @@
     "position": {
       "type": "string",
       "title": "Position",
-      "description": "Where the card sits: beside the chat column, on its right or its left",
+      "description": "Where the card sits beside the chat column; the bottom spots sit level with the prompt box. A double click on an empty spot moves it there",
       "options": [
+        "bottom-right",
         "right",
         "top-right",
-        "bottom-right",
+        "bottom-left",
         "left",
-        "top-left",
-        "bottom-left"
+        "top-left"
       ],
-      "default": "right"
+      "default": "bottom-right"
     },
     "size": {
       "type": "string",
@@ -28,7 +28,17 @@
         "large",
         "xlarge"
       ],
-      "default": "medium"
+      "default": "small"
+    },
+    "style": {
+      "type": "string",
+      "title": "Style",
+      "description": "compact: one low strip; full: the original tall card",
+      "options": [
+        "compact",
+        "full"
+      ],
+      "default": "compact"
     },
     "opacity": {
       "type": "string",
@@ -41,16 +51,6 @@
       ],
       "default": "normal"
     },
-    "mobile": {
-      "type": "string",
-      "title": "On the phone",
-      "description": "Also show the card in the Claude mobile app (it sits behind the messages there)",
-      "options": [
-        "hide",
-        "show"
-      ],
-      "default": "hide"
-    },
     "language": {
       "type": "string",
       "title": "Language",
@@ -60,6 +60,16 @@
         "en"
       ],
       "default": "es"
+    },
+    "mobile": {
+      "type": "string",
+      "title": "On the phone",
+      "description": "Also show the card in the Claude mobile app (it sits behind the messages there)",
+      "options": [
+        "hide",
+        "show"
+      ],
+      "default": "hide"
     }
   },
   "license": "MIT",

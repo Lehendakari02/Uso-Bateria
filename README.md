@@ -1,13 +1,17 @@
 # Uso-Bateria 🔋
 
-Clawd (la mascota de Claude) al lado de una **batería pixelada** que muestra cuánto te queda de tu uso **semanal** de Claude. Es un recuadro pequeño que se queda **al lado del chat** en **Claude Desktop** y se mueve solo.
+Clawd (la mascota de Claude) al lado de una **batería pixelada** que muestra cuánto te queda de tu uso **semanal** de Claude. Es un recuadro pequeño que se queda **abajo, al lado de la caja donde escribes**, en **Claude Desktop**, y se mueve solo. Lo puedes cambiar de sitio **con un doble clic**.
 
 Es una versión modificada de [Handsher/usage-battery](https://github.com/Handsher/usage-battery). Solo muestra el recuadro, **sin el fondo verde pixelado** en toda la ventana. La app conserva sus colores normales, y el recuadro se coloca en el hueco libre junto al chat para no taparlo.
 
 ![Cómo queda en un chat](assets/chat.png)
 
 <details>
-<summary>Ver en Claude Code, en modo claro y en un portátil</summary>
+<summary>Ver en Claude Code, en modo claro, en un portátil y en versión grande</summary>
+
+**Claude Code con el panel de la derecha abierto** (colocado con doble clic junto a la caja de escribir)
+
+![Cómo queda en Claude Code con el panel abierto](assets/panel.png)
 
 **Claude Code (con la lista de hilos abierta)**
 
@@ -20,6 +24,10 @@ Es una versión modificada de [Handsher/usage-battery](https://github.com/Handsh
 **Portátil (1440 × 900)**
 
 ![Cómo queda en un portátil](assets/laptop.png)
+
+**Estilo `full`** (el recuadro alto del original, en la posición `right`)
+
+![Estilo full](assets/full.png)
 
 </details>
 
@@ -37,8 +45,8 @@ Es una versión modificada de [Handsher/usage-battery](https://github.com/Handsh
 | **0 %** | Se queda dormido y le salen "z". |
 
 Además:
-- **Arriba a la derecha** del recuadro sale cuándo se renueva el límite semanal (por ejemplo `renueva sáb 10:00`, o `renueva hoy 10:00` si es el mismo día).
-- **En la fila de abajo** (`5H`) está el límite de 5 horas y a qué hora se recarga (`60% · recarga 13:00`).
+- **Debajo de la batería** sale cuándo se renueva el límite semanal (por ejemplo `renueva sáb 10:00`, o `renueva hoy 10:00` si es el mismo día).
+- **A la derecha** (`5H 60%`) está lo que te queda del límite de 5 horas. En el estilo `full` sale también a qué hora se recarga.
 - Los números se actualizan después de cada respuesta de Claude, y el reloj cada minuto.
 
 ## Instalación
@@ -101,31 +109,45 @@ Claude ejecutará los comandos de la opción 3 y te pedirá permiso antes.
 
 En todos los casos, **abre una sesión nueva** al terminar.
 
-## Ajustes: posición, tamaño, fondo, móvil e idioma
+## Moverlo con el ratón: doble clic
+
+Haz **doble clic en cualquier hueco vacío** de la ventana (donde no haya texto, botones ni paneles) y Clawd se va justo ahí, centrado en el punto donde has hecho clic. Se queda en ese sitio aunque cierres la app.
+
+- Para que quede bien, haz el doble clic en el **centro del hueco** donde lo quieres.
+- Para devolverlo a la posición de los ajustes, escribe `/bateria-reset` en el chat de Claude Code, o elige otra **Position** en los ajustes.
+- Arrastrarlo no se puede: la app no avisa a los mods cuando mueves el ratón, solo cuando haces clic.
+
+## Ajustes: posición, tamaño, estilo, fondo, idioma y móvil
 
 Se cambian en el **menú de configuración del plugin**: botón **+** → **Plugins** → `usage-battery-solo`, o `/plugin` en Claude Code. Después de cambiar algo, abre una sesión nueva para verlo.
 
 | Opción | Valores | Por defecto |
 | --- | --- | --- |
-| **Position** (posición) | `right`, `top-right`, `bottom-right`, `left`, `top-left`, `bottom-left` | `right` |
-| **Size** (tamaño) | `tiny`, `small`, `medium`, `large`, `xlarge` | `medium` |
+| **Position** (posición) | `bottom-right`, `right`, `top-right`, `bottom-left`, `left`, `top-left` | `bottom-right` |
+| **Size** (tamaño) | `tiny`, `small`, `medium`, `large`, `xlarge` | `small` |
+| **Style** (estilo) | `compact`, `full` | `compact` |
 | **Card background** (fondo del recuadro) | `solid`, `normal`, `glass` | `normal` |
 | **On the phone** (en el móvil) | `hide`, `show` | `hide` |
 | **Language** (idioma del recuadro) | `es`, `en` | `es` |
 
 ### Posiciones
 
-El recuadro siempre va **en el hueco libre al lado del chat**: centrado entre el chat y el borde de la ventana (`right`) o entre la barra lateral y el chat (`left`). Las variantes `top` y `bottom` lo suben o lo bajan, sin meterlo debajo de la barra de arriba.
+El recuadro siempre va **en el hueco libre al lado del chat**: centrado entre el chat y el borde de la ventana (las `right`) o entre la barra lateral y el chat (las `left`). Las `bottom` lo ponen **a la altura de la caja donde escribes**; las `top` lo suben, sin meterlo debajo de la barra de arriba. Si ninguna te encaja, usa el doble clic.
 
 ![Posiciones disponibles](assets/pos.png)
 
 ### Tamaños
 
-El recuadro crece con la ventana. Con una ventana a pantalla completa en un monitor de 1920 px, `medium` mide unos 270 px de ancho.
+El recuadro crece con la ventana. Con una ventana a pantalla completa en un monitor de 1920 px, `small` (el de por defecto) mide unos 220 px de ancho y `medium`, unos 270 px.
 
 ![Tamaños disponibles](assets/size.png)
 
 En portátiles o ventanas estrechas, quédate en `medium` o menos. `large` y `xlarge` necesitan una ventana ancha.
+
+### Estilo
+
+- `compact` (por defecto): una tira baja con Clawd, la batería, el porcentaje y cuándo se renueva. Es la que queda bien abajo, junto a la caja de escribir.
+- `full`: el recuadro alto del original, con cabecera (`USO SEMANAL`) y la fila del límite de 5 horas con su hora de recarga.
 
 ### Fondo del recuadro
 
@@ -135,7 +157,7 @@ En portátiles o ventanas estrechas, quédate en `medium` o menos. `large` y `xl
 
 ### Idioma
 
-Los textos del recuadro salen **en castellano** (`USO SEMANAL`, `QUEDA`, `renueva`, `recarga`). Si algún amigo lo prefiere en inglés, que ponga `en` en **Language**.
+Los textos del recuadro salen **en castellano** (`QUEDA`, `renueva`, y en el estilo `full` también `USO SEMANAL` y `recarga`). Si algún amigo lo prefiere en inglés, que ponga `en` en **Language**.
 
 ### En el móvil
 
@@ -150,10 +172,10 @@ No. Solo lee los números de uso que Claude ya tiene y no llama a la IA. Tampoco
 Con un plan Pro o Max, el límite semanal. Si usas Claude con una clave de API (sin límites de plan), muestra cuánto te queda de la ventana de contexto.
 
 **¿Lo puedo arrastrar con el ratón?**
-No. Se coloca en una de las seis posiciones de los ajustes.
+Arrastrar no, pero sí moverlo con un **doble clic** en el hueco donde lo quieras (ver arriba).
 
 **En Claude Code, cuando abro el panel de la derecha (Hilos, Contexto...), no se ve.**
-Es normal: el recuadro está en el fondo de la ventana, y ese panel lo tapa. Al cerrar el panel vuelve a verse. Si usas mucho ese panel, prueba la posición `left`.
+Es normal: el recuadro está en el fondo de la ventana, y ese panel lo tapa. Haz **doble clic en el hueco libre entre la caja de escribir y el panel** y se queda ahí (como en la captura de arriba).
 
 **¿Funciona junto con otros temas?**
 Funciona perfectamente con los colores normales de la app, en modo claro y oscuro. Pero el recuadro se dibuja en el "fondo" de la ventana, y en ese hueco solo puede haber una cosa a la vez: si instalas otro mod que pone un fondo o una foto, se pisarán y solo se verá uno de los dos.
@@ -168,8 +190,10 @@ En **+** → **Plugins**, desactiva o elimina `usage-battery-solo`, o con `claud
 
 - Se quitó el suelo verde pixelado y la viñeta oscura: fuera del recuadro, la ventana se ve como siempre.
 - Ya no obliga a usar el modo oscuro: la app mantiene tu modo claro u oscuro.
-- El recuadro va en el hueco libre junto al chat, no pegado a las esquinas de la ventana, y se aparta un poco más en ventanas estrechas.
+- El recuadro va en el hueco libre junto al chat, no pegado a las esquinas de la ventana; por defecto, abajo, a la altura de la caja de escribir. En ventanas estrechas se aparta un poco más.
 - Tamaños más pequeños (el `xlarge` de aquí es el `medium` del original) y uno nuevo, `tiny`.
+- Estilo nuevo `compact` (por defecto), una tira baja para ir junto a la caja de escribir; el recuadro original sigue como `full`.
+- Se puede mover con un doble clic en un hueco vacío, y volver con `/bateria-reset`.
 - Opción nueva **Card background** (`solid`, `normal`, `glass`).
 - Opción nueva **On the phone**: oculto en el móvil por defecto.
 - Textos del recuadro traducidos al castellano, con opción **Language** para volver al inglés.

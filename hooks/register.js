@@ -152,28 +152,68 @@ function card(u, now) {
 
 // ---------- the scene: ONLY the card, the rest of the window stays transparent ----------
 let CARD_OPACITY = 0.9
+// ---------- the compact card: 300 x 84, one low strip that sits well beside the prompt box ----------
+function compactCard(u, now) {
+  const lim = u.rateLimits ?? [], five = lim.find(r => /five|5/.test(r.kind)), week = lim.find(r => /seven|7|week/.test(r.kind))
+  const main = week ?? five, pct = r => Math.max(0, Math.min(100, Math.round(100 - r.percentUsed)))
+  const left = main ? pct(main) : Math.max(0, Math.min(100, Math.round(100 - (u.context?.percent ?? 0))))
+  const col = left > 50 ? '#6fe08a' : left > 20 ? '#ffc94d' : '#ff5e57'
+  const mood = left === 0 ? 'sleep' : left <= 20 ? 'tired' : left > 60 ? 'happy' : 'walk'
+  const resetsIn = r => { const ms = r?.resetsAt ? Date.parse(r.resetsAt) - now : NaN; return Number.isFinite(ms) && ms > 0 ? ms : NaN }
+  const clock = ms => { const t = new Date(now + ms); return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}` }
+  const wIn = resetsIn(main), at = new Date(now + wIn), sameDay = at.toDateString() === new Date(now).toDateString()
+  const reset = !Number.isFinite(wIn) ? '' : L.resets(sameDay ? undefined : L.days[at.getDay()], clock(wIn))
+  const f = week && five ? pct(five) : null
+  const H = 84, M = 'font-family="ui-monospace,Menlo,monospace" fill="#ffffff"'
+  const body = `<rect width="300" height="${H}" rx="20" fill="${GROUND}" fill-opacity="${CARD_OPACITY}" stroke="#ffffff" stroke-opacity=".12"/>`
+    + `<g class="cbw">${CB_CSS}<style>.cbw *{animation-delay:calc(var(--d,0s) - ${n2((now % 60000) / 1000)}s)!important}</style>`
+    + `<g transform="translate(10 36)">${clawd(4, mood)}</g>`
+    + battery(84, 14, 104, 40, left, col)
+    + pixelText(`${left}%`, 218, 20, 3.4, col)
+    + `<text x="218" y="52" font-size="9.5" letter-spacing="1.3" opacity=".55" ${M}>${L.left}</text>`
+    + (reset ? `<text x="84" y="72" font-size="9.5" opacity=".62" ${M}>${reset}</text>` : '')
+    + (f !== null ? `<text x="286" y="72" font-size="9.5" text-anchor="end" opacity=".62" ${M}>5H ${f}%</text>` : '')
+  return { h: H, body: body + '</g>', left }
+}
+
 // where each spot sits in the 1600 x 1000 scene: cx is the card's centre, in the free strip beside the chat column
-// (right of it, or left of it between the sidebar and the chat), never in the far corner or under the header
+// (right of it, or left of it between the sidebar and the chat), never in the far corner or under the header;
+// the bottom ones sit level with the prompt box (their foot 18 above the window's foot)
 const SPOT_AT = {
-  right: { cx: 1420, y: 500, h: 'r', v: 'm' }, 'top-right': { cx: 1420, y: 120, h: 'r', v: 't' }, 'bottom-right': { cx: 1420, y: 700, h: 'r', v: 'b' },
-  left: { cx: 410, y: 500, h: 'l', v: 'm' }, 'top-left': { cx: 410, y: 120, h: 'l', v: 't' }, 'bottom-left': { cx: 410, y: 700, h: 'l', v: 'b' },
+  right: { cx: 1385, y: 500, h: 'r', v: 'm' }, 'top-right': { cx: 1385, y: 120, h: 'r', v: 't' }, 'bottom-right': { cx: 1385, y: 831, h: 'r', v: 'b' },
+  left: { cx: 410, y: 500, h: 'l', v: 'm' }, 'top-left': { cx: 410, y: 120, h: 'l', v: 't' }, 'bottom-left': { cx: 410, y: 831, h: 'l', v: 'b' },
 }
 const SIZES = { tiny: 0.5, small: 0.62, medium: 0.75, large: 0.88, xlarge: 1 }
-const RATIOS = [[0.5, 1], [1, 1.15], [1.15, 1.3], [1.3, 1.45], [1.45, 1.6], [1.6, 1.8], [1.8, 2.05], [2.05, 2.4], [2.4, 3.2], [3.2, 9]]
+// the window shapes, in narrow bands: each moves the card by the crop of a window of its middle shape
+const BANDS = Array.from({ length: 60 }, (_, i) => [0.5 + i * 0.05, i === 59 ? 9 : 0.55 + i * 0.05])
+// a spot the person chose with a double click: { fx, fy }, the card's centre as fractions of the window
 const ratio = r => `${Math.round(r * 1000)}/1000`
-function scene(u, now, spot, size, opacity, lang) {
+function scene(u, now, spot, size, opacity, lang, style, place) {
   L = TEXT[lang] ?? TEXT.es
   CARD_OPACITY = { solid: 1, normal: 0.9, glass: 0.62 }[opacity] ?? 0.9
-  const at = SPOT_AT[spot] ?? SPOT_AT.right, k = SIZES[size] ?? SIZES.medium
+  const at = SPOT_AT[spot] ?? SPOT_AT['bottom-right'], k = SIZES[size] ?? SIZES.small
   let fg = '', css = ''
   if (u) {
-    const c = card(u, now), w = 300 * k, h = c.h * k
+    const c = style === 'full' ? card(u, now) : compactCard(u, now), w = 300 * k, h = c.h * k
+    if (place) {
+      // the scene is 1600 x 1000 cut to the window: the point (fx, fy) of the window lands somewhere else
+      // in the scene for each shape of window, so each band of shapes moves the card to the right place
+      const fx = Math.max(0.05, Math.min(0.95, place.fx)), fy = Math.max(0.05, Math.min(0.95, place.fy))
+      fg = `<g class="cb-at"><g transform="translate(${n2(fx * 1600 - w / 2)} ${n2(fy * 1000 - h / 2)}) scale(${k})">${c.body}</g></g>`
+      for (const [lo, hi] of BANDS) {
+        const r = hi > 5 ? 3.6 : (lo + hi) / 2
+        const dx = r < 1.6 ? (fx - 0.5) * (1000 * r - 1600) : 0, dy = r > 1.6 ? (fy - 0.5) * (1600 / r - 1000) : 0
+        if (Math.abs(dx) + Math.abs(dy) > 0.5) css += `@media (min-aspect-ratio:${ratio(lo)}) and (max-aspect-ratio:${ratio(hi)}){.cb-at{transform:translate(${n2(dx)}px,${n2(dy)}px)}}`
+      }
+      return wrap(css, fg)
+    }
     const x = at.cx - w / 2, y = at.v === 'b' ? at.y + 160 - h : at.v === 'm' ? 500 - h / 2 : at.y
     fg = `<g class="cb-at"><g class="cb-nudge"><g transform="translate(${n2(x)} ${n2(y)}) scale(${k})">${c.body}</g></g></g>`
     // a window narrower than the scene cuts its sides; a wider one, its top and foot: keep the card in the corner
-    for (const [lo, hi] of RATIOS) {
-      const dx = hi <= 1.6 ? (at.h === 'r' ? 500 * lo - 800 : 800 - 500 * lo) : 0
-      const dy = lo >= 1.6 ? (at.v === 't' ? 500 - 800 / hi : at.v === 'b' ? 800 / hi - 500 : 0) : 0
+    for (const [lo, hi] of BANDS) {
+      const r = hi > 5 ? 3.6 : (lo + hi) / 2
+      const dx = r < 1.6 ? (at.h === 'r' ? 500 * r - 800 : 800 - 500 * r) : 0
+      const dy = r > 1.6 ? (at.v === 't' ? 500 - 800 / r : at.v === 'b' ? 800 / r - 500 : 0) : 0
       if (dx || dy) css += `@media (min-aspect-ratio:${ratio(lo)}) and (max-aspect-ratio:${ratio(hi)}){.cb-at{transform:translate(${n2(dx)}px,${n2(dy)}px)}}`
     }
     // the chat column keeps its width in pixels, so in a narrow window the strip on its right is thinner:
@@ -181,19 +221,39 @@ function scene(u, now, spot, size, opacity, lang) {
     if (at.h === 'r') css += '@media (min-aspect-ratio:1600/1000) and (max-width:1500px){.cb-nudge{transform:translateX(28px)}}'
       + '@media (min-aspect-ratio:1600/1000) and (max-width:1300px){.cb-nudge{transform:translateX(51px)}}'
   }
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">'
-    + `<style>${css}</style><g font-family="-apple-system,system-ui,sans-serif">${fg}</g></svg>`
+  return wrap(css, fg)
 }
+const wrap = (css, fg) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">'
+  + `<style>${css}</style><g font-family="-apple-system,system-ui,sans-serif">${fg}</g></svg>`
 
 // ---------- the mod ----------
 const SCENE = 'usage-battery-solo'
-let timer = null
+const PLACE = 'place' // $.store: { fx, fy, position }, where a double click put the card
+let timer = null, lastClick = null
 export const register = (on, options) => {
   on('session.start', async ($, e, next) => {
     // the theme is set once: a set replaces the whole theme, so setting it again would wipe another mod's colors
     // no green ground and no forced dark mode: the app keeps its own colors and light/dark mode
     await $.theme.set({ backdrop: { scene: SCENE, glass: false } })
+    await $.command.register({ name: 'bateria-reset', description: 'Devuelve la batería a la posición de los ajustes' })
     timer ??= $.clock.every(60000, () => $.ui.invalidate('ui.render')) // the reset clock moves each minute
+    return next(e)
+  })
+  on('command.run', { command: 'bateria-reset' }, async $ => {
+    await $.store.delete(PLACE)
+    $.ui.invalidate('ui.render')
+    return { text: 'La batería vuelve a la posición de los ajustes.' }
+  })
+  // two clicks on the bare background, close in time and place: the card moves there
+  on('ui.pointer', async ($, e, next) => {
+    if (e.scene !== SCENE || e.surface !== 'desktop') return next(e)
+    const t = await $.clock.now(), prev = lastClick
+    lastClick = { t, x: e.x, y: e.y }
+    if (prev && t - prev.t < 500 && Math.abs(prev.x - e.x) <= 2 / 64 && Math.abs(prev.y - e.y) <= 2 / 64) {
+      lastClick = null
+      await $.store.set(PLACE, { fx: e.x, fy: e.y, position: options?.position ?? null })
+      $.ui.invalidate('ui.render')
+    }
     return next(e)
   })
   // the figures moved (after each answer, or a window moved a point): draw the battery again
@@ -205,8 +265,11 @@ export const register = (on, options) => {
     if (e.surface !== 'desktop' && !(e.surface === 'mobile' && options?.mobile === 'show')) return next(e)
     let u = null
     try { u = await $.session.usage() } catch {} // no figures yet: the ground alone
+    // a spot chosen by double click holds until the person picks another Position in the settings
+    let place = null
+    try { const p = await $.store.get(PLACE); if (p && typeof p.fx === 'number' && p.position === (options?.position ?? null)) place = p } catch {}
     const { Svg } = $.ui.resolve(e)
-    return Svg({ source: scene(u, await $.clock.now(), options?.position, options?.size, options?.opacity, options?.language), alt: (TEXT[options?.language] ?? TEXT.es).alt, isInteractive: true })
+    return Svg({ source: scene(u, await $.clock.now(), options?.position, options?.size, options?.opacity, options?.language, options?.style, e.surface === 'desktop' ? place : null), alt: (TEXT[options?.language] ?? TEXT.es).alt, isInteractive: true })
   })
 }
-export { card, scene }
+export { card, compactCard, scene }
