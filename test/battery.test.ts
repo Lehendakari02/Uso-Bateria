@@ -24,7 +24,7 @@ test('the theme is set once, and the battery redraws when usage moves', async ($
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   const ui = await $.ui.mount({ ...BACKDROP, surface: 'desktop' })
   const first = await source(ui)
-  expect(first).toContain('QUEDA')
+  expect(first).toContain('USO SEMANAL')
   expect(first.length).toBeLessThan(131072)
 
   week = 85 // 15% left: a different battery
@@ -56,7 +56,7 @@ test('on the phone the card stays hidden unless turned on', async ($, on) => {
 
 test('a spot chosen with a double click puts the card there, in any shape of window', async () => {
   const svg = scene(usage(30), NOW, 'bottom-right', 'small', 'normal', 'es', 'compact', { fx: 0.75, fy: 0.9 })
-  expect(svg).toContain('translate(1107') // 0.75 x 1600, less half the small card (93)
+  expect(svg).toContain('translate(1107') // 0.75 x 1600, less half the small compact card (93)
   expect(svg).toContain('min-aspect-ratio') // corrected for windows of other shapes
   expect(svg.length).toBeLessThan(131072)
 })

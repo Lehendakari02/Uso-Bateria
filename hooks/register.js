@@ -194,7 +194,7 @@ function scene(u, now, spot, size, opacity, lang, style, place) {
   const at = SPOT_AT[spot] ?? SPOT_AT['bottom-right'], k = SIZES[size] ?? SIZES.small
   let fg = '', css = ''
   if (u) {
-    const c = style === 'full' ? card(u, now) : compactCard(u, now), w = 300 * k, h = c.h * k
+    const c = style === 'compact' ? compactCard(u, now) : card(u, now), w = 300 * k, h = c.h * k
     if (place) {
       // the scene is 1600 x 1000 cut to the window: the point (fx, fy) of the window lands somewhere else
       // in the scene for each shape of window, so each band of shapes moves the card to the right place

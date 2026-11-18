@@ -25,9 +25,9 @@ Es una versión modificada de [Handsher/usage-battery](https://github.com/Handsh
 
 ![Cómo queda en un portátil](assets/laptop.png)
 
-**Estilo `full`** (el recuadro alto del original, en la posición `right`)
+**Estilo `compact`** (una tira baja, más discreta)
 
-![Estilo full](assets/full.png)
+![Estilo compacto](assets/compact.png)
 
 </details>
 
@@ -45,8 +45,8 @@ Es una versión modificada de [Handsher/usage-battery](https://github.com/Handsh
 | **0 %** | Se queda dormido y le salen "z". |
 
 Además:
-- **Debajo de la batería** sale cuándo se renueva el límite semanal (por ejemplo `renueva sáb 10:00`, o `renueva hoy 10:00` si es el mismo día).
-- **A la derecha** (`5H 60%`) está lo que te queda del límite de 5 horas. En el estilo `full` sale también a qué hora se recarga.
+- **Arriba a la derecha** del recuadro sale cuándo se renueva el límite semanal (por ejemplo `renueva sáb 10:00`, o `renueva hoy 10:00` si es el mismo día).
+- **En la fila de abajo** (`5H`) está el límite de 5 horas y a qué hora se recarga (`60% · recarga 13:00`).
 - Los números se actualizan después de cada respuesta de Claude, y el reloj cada minuto.
 
 ## Instalación
@@ -125,7 +125,7 @@ Se cambian en el **menú de configuración del plugin**: botón **+** → **Plug
 | --- | --- | --- |
 | **Position** (posición) | `bottom-right`, `right`, `top-right`, `bottom-left`, `left`, `top-left` | `bottom-right` |
 | **Size** (tamaño) | `tiny`, `small`, `medium`, `large`, `xlarge` | `small` |
-| **Style** (estilo) | `compact`, `full` | `compact` |
+| **Style** (estilo) | `full`, `compact` | `full` |
 | **Card background** (fondo del recuadro) | `solid`, `normal`, `glass` | `normal` |
 | **On the phone** (en el móvil) | `hide`, `show` | `hide` |
 | **Language** (idioma del recuadro) | `es`, `en` | `es` |
@@ -138,7 +138,7 @@ El recuadro siempre va **en el hueco libre al lado del chat**: centrado entre el
 
 ### Tamaños
 
-El recuadro crece con la ventana. Con una ventana a pantalla completa en un monitor de 1920 px, `small` (el de por defecto) mide unos 220 px de ancho y `medium`, unos 270 px.
+El recuadro crece con la ventana. Con una ventana a pantalla completa en un monitor de 1920 px, `small` (el de por defecto) mide unos 220 px de ancho y `medium`, unos 270 px. `tiny` es aún más pequeño, pero sus letras cuestan de leer.
 
 ![Tamaños disponibles](assets/size.png)
 
@@ -146,8 +146,8 @@ En portátiles o ventanas estrechas, quédate en `medium` o menos. `large` y `xl
 
 ### Estilo
 
-- `compact` (por defecto): una tira baja con Clawd, la batería, el porcentaje y cuándo se renueva. Es la que queda bien abajo, junto a la caja de escribir.
-- `full`: el recuadro alto del original, con cabecera (`USO SEMANAL`) y la fila del límite de 5 horas con su hora de recarga.
+- `full` (por defecto): el recuadro completo, con cabecera (`USO SEMANAL`), cuándo se renueva y la fila del límite de 5 horas con su hora de recarga.
+- `compact`: una tira baja con Clawd, la batería, el porcentaje, cuándo se renueva y el `5H`. Más discreta (ver la captura de arriba).
 
 ### Fondo del recuadro
 
@@ -157,7 +157,7 @@ En portátiles o ventanas estrechas, quédate en `medium` o menos. `large` y `xl
 
 ### Idioma
 
-Los textos del recuadro salen **en castellano** (`QUEDA`, `renueva`, y en el estilo `full` también `USO SEMANAL` y `recarga`). Si algún amigo lo prefiere en inglés, que ponga `en` en **Language**.
+Los textos del recuadro salen **en castellano** (`USO SEMANAL`, `QUEDA`, `renueva`, `recarga` y los días de la semana). Si algún amigo lo prefiere en inglés, que ponga `en` en **Language**.
 
 ### En el móvil
 
@@ -192,7 +192,7 @@ En **+** → **Plugins**, desactiva o elimina `usage-battery-solo`, o con `claud
 - Ya no obliga a usar el modo oscuro: la app mantiene tu modo claro u oscuro.
 - El recuadro va en el hueco libre junto al chat, no pegado a las esquinas de la ventana; por defecto, abajo, a la altura de la caja de escribir. En ventanas estrechas se aparta un poco más.
 - Tamaños más pequeños (el `xlarge` de aquí es el `medium` del original) y uno nuevo, `tiny`.
-- Estilo nuevo `compact` (por defecto), una tira baja para ir junto a la caja de escribir; el recuadro original sigue como `full`.
+- Estilo nuevo `compact`, una tira baja y discreta; el recuadro completo (`full`) sigue siendo el de por defecto.
 - Se puede mover con un doble clic en un hueco vacío, y volver con `/bateria-reset`.
 - Opción nueva **Card background** (`solid`, `normal`, `glass`).
 - Opción nueva **On the phone**: oculto en el móvil por defecto.

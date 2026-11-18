@@ -38,7 +38,7 @@
         "compact",
         "full"
       ],
-      "default": "compact"
+      "default": "full"
     },
     "opacity": {
       "type": "string",
