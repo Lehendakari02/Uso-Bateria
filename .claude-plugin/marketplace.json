@@ -1,13 +1,13 @@
 {
-  "name": "usage-battery-solo",
+  "name": "uso-bateria",
   "owner": {
-    "name": "Handsher"
+    "name": "Lehendakari02"
   },
   "plugins": [
     {
-      "name": "usage-battery-solo",
+      "name": "uso-bateria",
       "source": "./"
     }
   ],
-  "description": "Only the Clawd + battery card on the Claude Desktop background, no full-window green theme"
+  "description": "Uso-Bateria: Clawd and a pixel battery of your weekly Claude usage, in a small panel of Claude Desktop"
 }

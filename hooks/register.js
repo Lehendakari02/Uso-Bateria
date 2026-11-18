@@ -1,4 +1,5 @@
-// Claude battery: Clawd beside a pixel battery of your weekly Claude usage, on the Desktop app's background.
+// Uso-Bateria: Clawd beside a pixel battery of your weekly Claude usage, in a small panel of the Desktop app
+// (or painted on its background). The pixel art and animations come from Handsher/usage-battery (MIT).
 // The art is one SVG redrawn each minute and after each answer; its moves are CSS on the compositor, and every
 // cycle divides a minute, so a redraw picks each move up where it was.
 const GROUND = '#0b1717'
@@ -188,13 +189,16 @@ const SIZES = { tiny: 0.5, small: 0.62, medium: 0.75, large: 0.88, xlarge: 1 }
 const BANDS = Array.from({ length: 60 }, (_, i) => [0.5 + i * 0.05, i === 59 ? 9 : 0.55 + i * 0.05])
 // a spot the person chose with a double click: { fx, fy }, the card's centre as fractions of the window
 const ratio = r => `${Math.round(r * 1000)}/1000`
-function scene(u, now, spot, size, opacity, lang, style, place) {
+function scene(u, now, spot, size, opacity, lang, style, place, hint) {
   L = TEXT[lang] ?? TEXT.es
   CARD_OPACITY = { solid: 1, normal: 0.9, glass: 0.62 }[opacity] ?? 0.9
   const at = SPOT_AT[spot] ?? SPOT_AT['bottom-right'], k = SIZES[size] ?? SIZES.small
   let fg = '', css = ''
   if (u) {
     const c = style === 'compact' ? compactCard(u, now) : card(u, now), w = 300 * k, h = c.h * k
+    // while /bateria-mover waits: a pulsing frame round the card and a label over it
+    if (hint) c.body += `<g class="cb-move"><rect x="-8" y="-8" width="316" height="${c.h + 16}" rx="30" fill="none" stroke="#ffffff" stroke-width="3" stroke-dasharray="10 8"/>`
+      + `<rect x="10" y="-52" width="280" height="34" rx="17" fill="#ffffff"/><text x="150" y="-29" font-size="16" font-weight="600" text-anchor="middle" fill="#0b1717">${hint}</text></g>`
     if (place) {
       // the scene is 1600 x 1000 cut to the window: the point (fx, fy) of the window lands somewhere else
       // in the scene for each shape of window, so each band of shapes moves the card to the right place
@@ -224,52 +228,118 @@ function scene(u, now, spot, size, opacity, lang, style, place) {
   return wrap(css, fg)
 }
 const wrap = (css, fg) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">'
-  + `<style>${css}</style><g font-family="-apple-system,system-ui,sans-serif">${fg}</g></svg>`
+  + `<style>${css}.cb-move{animation:cb-move 1s ease-in-out infinite alternate}@keyframes cb-move{from{opacity:.4}to{opacity:1}}</style><g font-family="-apple-system,system-ui,sans-serif">${fg}</g></svg>`
 
+// ---------- the card alone, for the panel: its own small SVG, a fixed width in pixels ----------
+const PANEL_W = { tiny: 180, small: 220, medium: 260, large: 300, xlarge: 340 }
+function cardSvg(u, now, opacity, lang, style) {
+  L = TEXT[lang] ?? TEXT.es
+  CARD_OPACITY = { solid: 1, normal: 0.9, glass: 0.62 }[opacity] ?? 0.9
+  const c = style === 'compact' ? compactCard(u, now) : card(u, now)
+  // a margin of 16 all round leaves room for Clawd's hop and the sleeping z's
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 332 ${c.h + 32}"><g font-family="-apple-system,system-ui,sans-serif">${c.body}</g></svg>`
+}
+// a line of text, where no SVG is drawn (the terminal, where an Svg draws as nothing)
+function cardLine(u, now, lang) {
+  L = TEXT[lang] ?? TEXT.es
+  const lim = u.rateLimits ?? [], week = lim.find(r => /seven|7|week/.test(r.kind)), five = lim.find(r => /five|5/.test(r.kind)), main = week ?? five
+  const left = main ? Math.max(0, Math.min(100, Math.round(100 - main.percentUsed))) : Math.max(0, Math.min(100, Math.round(100 - (u.context?.percent ?? 0))))
+  return `${week ? L.week : five ? L.five : L.ctx}: ${left}% ${L.left.toLowerCase()}`
+}
 // ---------- the mod ----------
-const SCENE = 'usage-battery-solo'
-const PLACE = 'place' // $.store: { fx, fy, position }, where a double click put the card
-let timer = null, lastClick = null
+const SCENE = 'uso-bateria'
+const PANE = 'bateria'
+const PLACE = 'place' // $.store: { fx, fy, position }, where /bateria-mover put the background card
+const MOVING = 'moving' // $.store: true while /bateria-mover waits for the click
+let timer = null
+// the panel asks to start small (a widget in a corner of the chat area) and paints nothing under the card
+function openPane($, title) {
+  return $.ui.open({ id: PANE, title, placement: 'widget', backgroundColor: 'transparent' })
+}
 export const register = (on, options) => {
+  const mode = options?.mode === 'fondo' ? 'fondo' : 'panel'
+  const lang = options?.language
+  const say = (es, en) => ((TEXT[lang] ?? TEXT.es) === TEXT.en ? en : es)
+
   on('session.start', async ($, e, next) => {
-    // the theme is set once: a set replaces the whole theme, so setting it again would wipe another mod's colors
-    // no green ground and no forced dark mode: the app keeps its own colors and light/dark mode
-    await $.theme.set({ backdrop: { scene: SCENE, glass: false } })
-    await $.command.register({ name: 'bateria-reset', description: 'Devuelve la batería a la posición de los ajustes' })
+    if (mode === 'fondo') {
+      // the theme is set once: a set replaces the whole theme, so setting it again would wipe another mod's colors
+      // no green ground and no forced dark mode: the app keeps its own colors and light/dark mode
+      await $.theme.set({ backdrop: { scene: SCENE, glass: false } })
+    } else {
+      // the panel touches no theme: it sits beside any background, and the app moves it as panels open and close
+      void openPane($, say('Batería', 'Battery'))
+    }
+    await $.store.delete(MOVING) // a move left waiting in an earlier session is dropped
+    await $.command.register({ name: 'bateria', description: say('Abre la batería si la cerraste', 'Open the battery if you closed it') })
+    await $.command.register({ name: 'bateria-mover', description: say('Mueve la batería: el siguiente clic en un hueco vacío la coloca (modo fondo)', 'Move the battery: the next click on an empty spot places it (background mode)') })
+    await $.command.register({ name: 'bateria-reset', description: say('Devuelve la batería a la posición de los ajustes (modo fondo)', 'Put the battery back where the settings say (background mode)') })
     timer ??= $.clock.every(60000, () => $.ui.invalidate('ui.render')) // the reset clock moves each minute
     return next(e)
   })
+
+  on('command.run', { command: 'bateria' }, async $ => {
+    if (mode === 'fondo') return { text: say('La batería está en el fondo de la ventana (modo fondo). Para cambiarla de sitio, usa /bateria-mover.', 'The battery is on the window background (background mode). To move it, use /bateria-mover.') }
+    await openPane($, say('Batería', 'Battery'))
+    return { text: say('Batería abierta.', 'Battery opened.') }
+  })
+  on('command.run', { command: 'bateria-mover' }, async $ => {
+    if (mode !== 'fondo') return { text: say('En modo panel, la app coloca la batería y la mueve sola cuando abres o cierras paneles. Para elegir tú el sitio con el ratón, pon Mode en "fondo" en los ajustes del plugin.', 'In panel mode the app places the battery and moves it as panels open and close. To choose the spot with the mouse, set Mode to "fondo" in the plugin settings.') }
+    if ((await $.store.get(MOVING)) === true) { // typed again: the move is called off
+      await $.store.delete(MOVING)
+      $.ui.invalidate('ui.render')
+      return { text: say('Movimiento cancelado: la batería se queda donde estaba.', 'Move cancelled: the battery stays where it was.') }
+    }
+    await $.store.set(MOVING, true)
+    $.ui.invalidate('ui.render')
+    return { text: say('Haz clic en un hueco vacío de la ventana y la batería se colocará ahí. Para cancelar, vuelve a escribir /bateria-mover.', 'Click an empty spot of the window and the battery goes there. To cancel, type /bateria-mover again.') }
+  })
   on('command.run', { command: 'bateria-reset' }, async $ => {
     await $.store.delete(PLACE)
+    await $.store.delete(MOVING)
     $.ui.invalidate('ui.render')
-    return { text: 'La batería vuelve a la posición de los ajustes.' }
+    return { text: say('La batería vuelve a la posición de los ajustes.', 'The battery is back where the settings say.') }
   })
-  // two clicks on the bare background, close in time and place: the card moves there
+  // while /bateria-mover waits, the next click on the bare background places the card there
   on('ui.pointer', async ($, e, next) => {
     if (e.scene !== SCENE || e.surface !== 'desktop') return next(e)
-    const t = await $.clock.now(), prev = lastClick
-    lastClick = { t, x: e.x, y: e.y }
-    if (prev && t - prev.t < 500 && Math.abs(prev.x - e.x) <= 2 / 64 && Math.abs(prev.y - e.y) <= 2 / 64) {
-      lastClick = null
+    if ((await $.store.get(MOVING)) === true) {
       await $.store.set(PLACE, { fx: e.x, fy: e.y, position: options?.position ?? null })
+      await $.store.delete(MOVING)
       $.ui.invalidate('ui.render')
     }
     return next(e)
   })
   // the figures moved (after each answer, or a window moved a point): draw the battery again
   on('session.measure', ($, e, next) => { $.ui.invalidate('ui.render'); return next(e) })
+
+  // the panel: the card alone, at a fixed width, wherever the app seats the pane
+  on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
+    const { Text, Svg } = $.ui.resolve(e)
+    let u = null
+    try { u = await $.session.usage() } catch {}
+    const now = await $.clock.now()
+    if (!u) return Text({ dimColor: true, children: say('La batería aparece tras la primera respuesta.', 'The battery shows after the first answer.') })
+    if (e.surface === 'terminal' || (e.surface === 'mobile' && options?.mobile !== 'show')) return Text({ children: cardLine(u, now, lang) })
+    const w = PANEL_W[options?.size] ?? PANEL_W.small
+    return Svg({ source: cardSvg(u, now, options?.opacity, lang, options?.style), alt: (TEXT[lang] ?? TEXT.es).alt, width: w, isInteractive: true })
+  })
+
+  // the background: the card painted in the window's backdrop (mode "fondo")
   on('ui.render', { component: 'Backdrop' }, async ($, e, next) => {
     if (e.props.plugin !== $.plugin.name || e.props.scene !== SCENE) return next(e)
     // a phone has no free strip beside the chat: there the card would sit behind the messages, so it shows
     // on the desktop app only, unless the person turns it on for the phone too
     if (e.surface !== 'desktop' && !(e.surface === 'mobile' && options?.mobile === 'show')) return next(e)
     let u = null
-    try { u = await $.session.usage() } catch {} // no figures yet: the ground alone
-    // a spot chosen by double click holds until the person picks another Position in the settings
-    let place = null
+    try { u = await $.session.usage() } catch {} // no figures yet: nothing drawn
+    // a spot chosen with /bateria-mover holds until the person picks another Position in the settings
+    let place = null, moving = false
     try { const p = await $.store.get(PLACE); if (p && typeof p.fx === 'number' && p.position === (options?.position ?? null)) place = p } catch {}
+    try { moving = e.surface === 'desktop' && (await $.store.get(MOVING)) === true } catch {}
     const { Svg } = $.ui.resolve(e)
-    return Svg({ source: scene(u, await $.clock.now(), options?.position, options?.size, options?.opacity, options?.language, options?.style, e.surface === 'desktop' ? place : null), alt: (TEXT[options?.language] ?? TEXT.es).alt, isInteractive: true })
+    const source = scene(u, await $.clock.now(), options?.position, options?.size, options?.opacity, lang, options?.style, e.surface === 'desktop' ? place : null, moving ? say('Haz clic donde quieras ponerme', 'Click where you want me') : null)
+    return Svg({ source, alt: (TEXT[lang] ?? TEXT.es).alt, isInteractive: true })
   })
 }
-export { card, compactCard, scene }
+export { card, compactCard, scene, cardSvg }

@@ -1,12 +1,22 @@
 {
-  "name": "usage-battery-solo",
-  "version": "1.1.0-solo.1",
-  "description": "Only the Clawd + battery card on the Claude Desktop background, no full-window green theme",
+  "name": "uso-bateria",
+  "version": "2.0.0",
+  "description": "Clawd beside a pixel battery of your weekly Claude usage, in a small panel of the Claude Desktop app",
   "userConfig": {
+    "mode": {
+      "type": "string",
+      "title": "Mode",
+      "description": "panel: a small panel the app places and moves as panels open and close, beside any background. fondo: painted on the window background, placed with Position or /bateria-mover",
+      "options": [
+        "panel",
+        "fondo"
+      ],
+      "default": "panel"
+    },
     "position": {
       "type": "string",
       "title": "Position",
-      "description": "Where the card sits beside the chat column; the bottom spots sit level with the prompt box. A double click on an empty spot moves it there",
+      "description": "Mode fondo only: where the card sits beside the chat column; the bottom spots sit level with the prompt box. /bateria-mover places it with a click",
       "options": [
         "bottom-right",
         "right",
@@ -74,6 +84,6 @@
   },
   "license": "MIT",
   "author": {
-    "name": "Handsher"
+    "name": "Lehendakari02"
   }
 }

@@ -1,37 +1,31 @@
 # Uso-Bateria 🔋
 
-Clawd (la mascota de Claude) al lado de una **batería pixelada** que muestra cuánto te queda de tu uso **semanal** de Claude. Es un recuadro pequeño que se queda **abajo, al lado de la caja donde escribes**, en **Claude Desktop**, y se mueve solo. Lo puedes cambiar de sitio **con un doble clic**.
+Clawd, la mascota de Claude, al lado de una **batería pixelada** que te dice cuánto te queda de tu uso **semanal** de Claude. Vive en un **mini panel** de **Claude Desktop** que la propia app coloca en una esquina del chat. Cuando abres o cierras paneles se recoloca solo, y funciona con cualquier fondo o tema que tengas.
 
-Es una versión modificada de [Handsher/usage-battery](https://github.com/Handsher/usage-battery). Solo muestra el recuadro, **sin el fondo verde pixelado** en toda la ventana. La app conserva sus colores normales, y el recuadro se coloca en el hueco libre junto al chat para no taparlo.
-
-![Cómo queda en un chat](assets/chat.png)
+![Uso-Bateria en un chat](assets/chat.png)
 
 <details>
-<summary>Ver en Claude Code, en modo claro, en un portátil y en versión grande</summary>
+<summary>Ver en Claude Code, en modo claro y en un portátil</summary>
 
-**Claude Code con el panel de la derecha abierto** (colocado con doble clic junto a la caja de escribir)
+**Claude Code con el panel de la derecha abierto**
 
-![Cómo queda en Claude Code con el panel abierto](assets/panel.png)
+![En Claude Code con el panel abierto](assets/panel.png)
 
-**Claude Code (con la lista de hilos abierta)**
+**Claude Code con la lista de hilos abierta**
 
-![Cómo queda en Claude Code](assets/code.png)
+![En Claude Code con la lista de hilos](assets/code.png)
 
 **Modo claro**
 
-![Cómo queda en modo claro](assets/light.png)
+![En modo claro](assets/light.png)
 
 **Portátil (1440 × 900)**
 
-![Cómo queda en un portátil](assets/laptop.png)
-
-**Estilo `compact`** (una tira baja, más discreta)
-
-![Estilo compacto](assets/compact.png)
+![En un portátil](assets/laptop.png)
 
 </details>
 
-> Las capturas son una simulación de la ventana de Claude Desktop (a 2000 × 1080 salvo la del portátil) para que te hagas una idea. El recuadro y sus animaciones son los reales.
+> Las capturas son simulaciones de Claude Desktop (a 2000 × 1080, salvo la del portátil). El recuadro y sus animaciones son los reales; el sitio exacto del mini panel lo decide la app.
 
 ## Qué hace Clawd según la batería
 
@@ -45,9 +39,21 @@ Es una versión modificada de [Handsher/usage-battery](https://github.com/Handsh
 | **0 %** | Se queda dormido y le salen "z". |
 
 Además:
-- **Arriba a la derecha** del recuadro sale cuándo se renueva el límite semanal (por ejemplo `renueva sáb 10:00`, o `renueva hoy 10:00` si es el mismo día).
+- **Arriba a la derecha** sale cuándo se renueva el límite semanal (`renueva sáb 10:00`, o `renueva hoy 10:00` si es el mismo día).
 - **En la fila de abajo** (`5H`) está el límite de 5 horas y a qué hora se recarga (`60% · recarga 13:00`).
 - Los números se actualizan después de cada respuesta de Claude, y el reloj cada minuto.
+
+## Dos modos
+
+| | **Panel** (por defecto) | **Fondo** |
+| --- | --- | --- |
+| Dónde sale | Un mini panel que la app coloca en una esquina del chat | Pintado en el fondo de la ventana |
+| Paneles abiertos (Hilos, Contexto…) | La app lo recoloca para que no se tape | Un panel abierto lo puede tapar |
+| Fondos y temas | Compatible con cualquiera | Ocupa el fondo: no se puede combinar con otro tema que ponga fondo |
+| Cómo se mueve | Lo coloca la app; lo puedes minimizar o ampliar | Con `/bateria-mover` y un clic, o con la opción **Position** |
+| Tamaño | Fijo en píxeles | Crece con la ventana |
+
+El modo se cambia en los ajustes, en la opción **Mode**.
 
 ## Instalación
 
@@ -61,16 +67,16 @@ Necesitas **Claude Desktop** (la app de escritorio). Elige la forma que te resul
    ```
    Lehendakari02/Uso-Bateria
    ```
-4. Busca **usage-battery-solo** y pulsa **Add plugin**.
-5. Elige la posición y el tamaño, o deja los de por defecto.
-6. **Abre una sesión nueva.** El recuadro aparece en las sesiones que empiezan después de instalarlo.
+4. Busca **uso-bateria** y pulsa **Add plugin**.
+5. Elige los ajustes, o deja los de por defecto.
+6. **Abre una sesión nueva.** La batería aparece en las sesiones que empiezan después de instalarla.
 
 ### Opción 2: con un comando en Claude Code
 
 En el chat de una sesión de Claude Code, escribe:
 
 ```
-/plugin install usage-battery-solo --marketplace Lehendakari02/Uso-Bateria
+/plugin install uso-bateria --marketplace Lehendakari02/Uso-Bateria
 ```
 
 Si tu versión no acepta `--marketplace`, hazlo en dos pasos:
@@ -80,13 +86,13 @@ Si tu versión no acepta `--marketplace`, hazlo en dos pasos:
 ```
 
 ```
-/plugin install usage-battery-solo@usage-battery-solo
+/plugin install uso-bateria@uso-bateria
 ```
 
 ### Opción 3: desde la terminal de tu ordenador
 
 ```bash
-claude plugin install usage-battery-solo --marketplace Lehendakari02/Uso-Bateria
+claude plugin install uso-bateria --marketplace Lehendakari02/Uso-Bateria
 ```
 
 O en dos pasos:
@@ -96,58 +102,69 @@ claude plugin marketplace add Lehendakari02/Uso-Bateria
 ```
 
 ```bash
-claude plugin install usage-battery-solo@usage-battery-solo
+claude plugin install uso-bateria@uso-bateria
 ```
 
 ### Opción 4: pidiéndoselo a Claude
 
 En una sesión de Claude Code **en tu ordenador** (no en la nube), escribe algo como:
 
-> Instala el plugin `usage-battery-solo` del marketplace `Lehendakari02/Uso-Bateria`.
+> Instala el plugin `uso-bateria` del marketplace `Lehendakari02/Uso-Bateria`.
 
 Claude ejecutará los comandos de la opción 3 y te pedirá permiso antes.
 
 En todos los casos, **abre una sesión nueva** al terminar.
 
-## Moverlo con el ratón: doble clic
+## Comandos
 
-Haz **doble clic en cualquier hueco vacío** de la ventana (donde no haya texto, botones ni paneles) y Clawd se va justo ahí, centrado en el punto donde has hecho clic. Se queda en ese sitio aunque cierres la app.
+Se escriben en el chat:
 
-- Para que quede bien, haz el doble clic en el **centro del hueco** donde lo quieres.
-- Para devolverlo a la posición de los ajustes, escribe `/bateria-reset` en el chat de Claude Code, o elige otra **Position** en los ajustes.
-- Arrastrarlo no se puede: la app no avisa a los mods cuando mueves el ratón, solo cuando haces clic.
+| Comando | Qué hace |
+| --- | --- |
+| `/bateria` | Vuelve a abrir el mini panel si lo has cerrado. |
+| `/bateria-mover` | **Modo fondo:** la batería se marca con un borde que parpadea y el aviso *"Haz clic donde quieras ponerme"*. El siguiente clic en un hueco vacío de la ventana la coloca ahí. Escríbelo otra vez para cancelar. |
+| `/bateria-reset` | **Modo fondo:** devuelve la batería a la posición de los ajustes. |
 
-## Ajustes: posición, tamaño, estilo, fondo, idioma y móvil
+![Moviendo la batería con /bateria-mover](assets/mover.png)
 
-Se cambian en el **menú de configuración del plugin**: botón **+** → **Plugins** → `usage-battery-solo`, o `/plugin` en Claude Code. Después de cambiar algo, abre una sesión nueva para verlo.
+El sitio que eliges con `/bateria-mover` se recuerda aunque cierres la app, hasta que uses `/bateria-reset` o cambies **Position** en los ajustes. No hace falta tocar la batería primero, y un clic normal nunca la mueve: solo el clic que viene después de `/bateria-mover`.
+
+## Ajustes
+
+Se cambian en el **menú de configuración del plugin**: botón **+** → **Plugins** → `uso-bateria`, o `/plugin` en Claude Code. Después de cambiar algo, abre una sesión nueva para verlo.
 
 | Opción | Valores | Por defecto |
 | --- | --- | --- |
-| **Position** (posición) | `bottom-right`, `right`, `top-right`, `bottom-left`, `left`, `top-left` | `bottom-right` |
+| **Mode** (modo) | `panel`, `fondo` | `panel` |
+| **Position** (posición, modo fondo) | `bottom-right`, `right`, `top-right`, `bottom-left`, `left`, `top-left` | `bottom-right` |
 | **Size** (tamaño) | `tiny`, `small`, `medium`, `large`, `xlarge` | `small` |
 | **Style** (estilo) | `full`, `compact` | `full` |
 | **Card background** (fondo del recuadro) | `solid`, `normal`, `glass` | `normal` |
-| **On the phone** (en el móvil) | `hide`, `show` | `hide` |
 | **Language** (idioma del recuadro) | `es`, `en` | `es` |
-
-### Posiciones
-
-El recuadro siempre va **en el hueco libre al lado del chat**: centrado entre el chat y el borde de la ventana (las `right`) o entre la barra lateral y el chat (las `left`). Las `bottom` lo ponen **a la altura de la caja donde escribes**; las `top` lo suben, sin meterlo debajo de la barra de arriba. Si ninguna te encaja, usa el doble clic.
-
-![Posiciones disponibles](assets/pos.png)
+| **On the phone** (en el móvil) | `hide`, `show` | `hide` |
 
 ### Tamaños
 
-El recuadro crece con la ventana. Con una ventana a pantalla completa en un monitor de 1920 px, `small` (el de por defecto) mide unos 220 px de ancho y `medium`, unos 270 px. `tiny` es aún más pequeño, pero sus letras cuestan de leer.
+En modo panel cada tamaño tiene un ancho fijo, sea cual sea la ventana:
 
-![Tamaños disponibles](assets/size.png)
+![Tamaños](assets/size.png)
 
-En portátiles o ventanas estrechas, quédate en `medium` o menos. `large` y `xlarge` necesitan una ventana ancha.
+En modo fondo el recuadro crece con la ventana: `small` mide unos 220 px de ancho en un monitor de 1920 px.
 
 ### Estilo
 
-- `full` (por defecto): el recuadro completo, con cabecera (`USO SEMANAL`), cuándo se renueva y la fila del límite de 5 horas con su hora de recarga.
-- `compact`: una tira baja con Clawd, la batería, el porcentaje, cuándo se renueva y el `5H`. Más discreta (ver la captura de arriba).
+- `full` (por defecto): el recuadro completo, con cabecera (`USO SEMANAL`), cuándo se renueva y el límite de 5 horas con su hora de recarga.
+- `compact`: una tira baja con Clawd, la batería, el porcentaje, cuándo se renueva y el `5H`.
+
+![Estilo compacto](assets/compact.png)
+
+### Posiciones (modo fondo)
+
+En modo fondo, el recuadro va **en el hueco libre al lado del chat**: entre el chat y el borde derecho (las `right`) o entre la barra lateral y el chat (las `left`). Las `bottom` lo ponen a la altura de la caja donde escribes; las `top` lo suben, sin meterlo debajo de la barra de arriba. Si ninguna te encaja, usa `/bateria-mover`.
+
+![Posiciones en modo fondo](assets/pos.png)
+
+![Modo fondo](assets/fondo.png)
 
 ### Fondo del recuadro
 
@@ -157,11 +174,11 @@ En portátiles o ventanas estrechas, quédate en `medium` o menos. `large` y `xl
 
 ### Idioma
 
-Los textos del recuadro salen **en castellano** (`USO SEMANAL`, `QUEDA`, `renueva`, `recarga` y los días de la semana). Si algún amigo lo prefiere en inglés, que ponga `en` en **Language**.
+Los textos del recuadro salen **en castellano** (`USO SEMANAL`, `QUEDA`, `renueva`, `recarga` y los días de la semana). Para verlos en inglés, pon `en` en **Language**.
 
 ### En el móvil
 
-En la app del móvil no hay hueco al lado del chat: el recuadro quedaría detrás de los mensajes. Por eso viene **oculto en el móvil** (`hide`). Si aun así lo quieres ver, pon `show`.
+En la app del móvil no hay sitio libre al lado del chat, así que la batería viene **oculta** (`hide`). Si la quieres ver, pon `show`.
 
 ## Preguntas frecuentes
 
@@ -171,34 +188,25 @@ No. Solo lee los números de uso que Claude ya tiene y no llama a la IA. Tampoco
 **¿Qué número muestra?**
 Con un plan Pro o Max, el límite semanal. Si usas Claude con una clave de API (sin límites de plan), muestra cuánto te queda de la ventana de contexto.
 
-**¿Lo puedo arrastrar con el ratón?**
-Arrastrar no, pero sí moverlo con un **doble clic** en el hueco donde lo quieras (ver arriba).
+**¿La puedo arrastrar con el ratón?**
+No: la app no avisa a los plugins cuando arrastras el ratón. En modo panel la coloca la app. En modo fondo, usa `/bateria-mover` y haz clic donde la quieras.
 
-**En Claude Code, cuando abro el panel de la derecha (Hilos, Contexto...), no se ve.**
-Es normal: el recuadro está en el fondo de la ventana, y ese panel lo tapa. Haz **doble clic en el hueco libre entre la caja de escribir y el panel** y se queda ahí (como en la captura de arriba).
+**He cerrado el mini panel, ¿cómo lo recupero?**
+Escribe `/bateria`, o abre una sesión nueva.
 
-**¿Funciona junto con otros temas?**
-Funciona perfectamente con los colores normales de la app, en modo claro y oscuro. Pero el recuadro se dibuja en el "fondo" de la ventana, y en ese hueco solo puede haber una cosa a la vez: si instalas otro mod que pone un fondo o una foto, se pisarán y solo se verá uno de los dos.
+**¿Funciona con otros temas o fondos?**
+En modo panel, sí, con cualquiera. En modo fondo, la batería ocupa el fondo de la ventana, y ahí solo cabe una cosa: si otro plugin pone un fondo o una foto, se pisan y solo se ve uno.
 
 **¿Y si en mi sistema está activado "reducir movimiento"?**
-El recuadro se queda quieto.
+Clawd y la batería se quedan quietos.
 
 **¿Cómo lo quito?**
-En **+** → **Plugins**, desactiva o elimina `usage-battery-solo`, o con `claude plugin uninstall usage-battery-solo`. Después abre una sesión nueva.
+En **+** → **Plugins**, desactiva o elimina `uso-bateria`, o escribe `claude plugin uninstall uso-bateria` en la terminal. Después abre una sesión nueva.
 
-## Cambios respecto al original
+## Estado
 
-- Se quitó el suelo verde pixelado y la viñeta oscura: fuera del recuadro, la ventana se ve como siempre.
-- Ya no obliga a usar el modo oscuro: la app mantiene tu modo claro u oscuro.
-- El recuadro va en el hueco libre junto al chat, no pegado a las esquinas de la ventana; por defecto, abajo, a la altura de la caja de escribir. En ventanas estrechas se aparta un poco más.
-- Tamaños más pequeños (el `xlarge` de aquí es el `medium` del original) y uno nuevo, `tiny`.
-- Estilo nuevo `compact`, una tira baja y discreta; el recuadro completo (`full`) sigue siendo el de por defecto.
-- Se puede mover con un doble clic en un hueco vacío, y volver con `/bateria-reset`.
-- Opción nueva **Card background** (`solid`, `normal`, `glass`).
-- Opción nueva **On the phone**: oculto en el móvil por defecto.
-- Textos del recuadro traducidos al castellano, con opción **Language** para volver al inglés.
-- Nombre nuevo, `usage-battery-solo`, para que no se mezcle con el original.
+Es un proyecto en marcha. El modo panel y `/bateria-mover` son nuevos y aún se están probando en la app real. Si algo no se ve bien, abre un *issue* en este repositorio con una captura.
 
-## Créditos y licencia
+## Créditos
 
-Basado en [usage-battery](https://github.com/Handsher/usage-battery) de Handsher, con licencia MIT (ver [LICENSE](LICENSE)). Este mod lo han hecho fans y no está afiliado a Anthropic.
+El dibujo de Clawd, la batería pixelada y sus animaciones parten de [usage-battery](https://github.com/Handsher/usage-battery), de Handsher. Licencia MIT (ver [LICENSE](LICENSE)). Proyecto de fans, sin relación con Anthropic.
