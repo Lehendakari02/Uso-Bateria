@@ -133,7 +133,21 @@ El sitio que eliges con `/bateria-mover` se recuerda aunque cierres la app, hast
 
 ## Ajustes
 
-Se cambian en el **menú de configuración del plugin**: botón **+** → **Plugins** → `uso-bateria`, o `/plugin` en Claude Code. Después de cambiar algo, abre una sesión nueva para verlo.
+Se cambian de cualquiera de estas formas. Después de cambiar algo, abre una sesión nueva para verlo.
+
+- **En la app:** **Plugins** → **Uso bateria** → sus ajustes.
+- **En el chat de Claude Code:**
+  ```
+  /plugin configure uso-bateria@uso-bateria
+  ```
+- **Desde la terminal**, al instalar (puedes poner varios `--config`):
+  ```bash
+  claude plugin install uso-bateria --marketplace Lehendakari02/Uso-Bateria --config size=medium
+  ```
+  O después, con los valores que quieras cambiar:
+  ```bash
+  echo '{"size":"medium","style":"full"}' | claude plugin configure uso-bateria@uso-bateria --values-stdin
+  ```
 
 | Opción | Valores | Por defecto |
 | --- | --- | --- |
