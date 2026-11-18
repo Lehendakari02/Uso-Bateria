@@ -4,7 +4,12 @@
 const GROUND = '#0b1717'
 const n2 = x => +x.toFixed(3)
 const mix = (x, y, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(x.slice(i, i + 2), 16) * (1 - t) + parseInt(y.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('')
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+// the card's words, in Spanish (default) or English
+const TEXT = {
+  es: { days: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'], week: 'USO SEMANAL', five: 'USO · 5 HORAS', ctx: 'CONTEXTO', resets: (d, t) => `renueva ${d ?? 'hoy'} ${t}`, left: 'QUEDA', refills: 'recarga', alt: 'Batería de Claude: lo que te queda de uso semanal' },
+  en: { days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], week: 'CLAUDE · WEEKLY', five: 'CLAUDE · 5 HOURS', ctx: 'CLAUDE · CONTEXT', resets: (d, t) => `resets ${d ?? 'at'} ${t}`, left: 'LEFT', refills: 'refills', alt: 'Claude battery: your weekly usage left' },
+}
+let L = TEXT.es
 // ---------- the Claude battery: Clawd beside a pixel battery of the week's usage ----------
 // Clawd on a 16 × 8 grid, lit from the top left: H light, B body, S shade, E eye, a/b arms, 1/2 the two leg pairs
 const CLAWD = ['...HHHHHHHHHB...', '...HBBBBBBBBS...', '...HBEBBBBEBS...', '.aaBBEBBBBEBSbb.', '...BBBBBBBBBS...', '...SSSSSSSSSS...', '...1.2....1.2...', '...1.2....1.2...']
@@ -124,23 +129,23 @@ function card(u, now) {
   const resetsIn = r => { const ms = r?.resetsAt ? Date.parse(r.resetsAt) - now : NaN; return Number.isFinite(ms) && ms > 0 ? ms : NaN }
   const clock = ms => { const t = new Date(now + ms); return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}` }
   const wIn = resetsIn(main), at = new Date(now + wIn), sameDay = at.toDateString() === new Date(now).toDateString()
-  const reset = !Number.isFinite(wIn) ? '' : `resets ${sameDay ? 'at' : DAYS[at.getDay()]} ${clock(wIn)}`
+  const reset = !Number.isFinite(wIn) ? '' : L.resets(sameDay ? undefined : L.days[at.getDay()], clock(wIn))
   const sub = week && five, H = sub ? 178 : 154
   const M = 'font-family="ui-monospace,Menlo,monospace" fill="#ffffff"'
   let body = `<rect width="300" height="${H}" rx="24" fill="${GROUND}" fill-opacity="${CARD_OPACITY}" stroke="#ffffff" stroke-opacity=".12"/>`
     + `<g class="cbw">${CB_CSS}<style>.cbw *{animation-delay:calc(var(--d,0s) - ${n2((now % 60000) / 1000)}s)!important}</style>`
-    + `<text x="24" y="33" font-size="11" font-weight="600" letter-spacing="1.3" opacity=".62" ${M}>${week ? 'CLAUDE · WEEKLY' : five ? 'CLAUDE · 5 HOURS' : 'CLAUDE · CONTEXT'}</text>`
+    + `<text x="24" y="33" font-size="11" font-weight="600" letter-spacing="1.3" opacity=".62" ${M}>${week ? L.week : five ? L.five : L.ctx}</text>`
     + (reset ? `<text x="276" y="33" font-size="11" text-anchor="end" opacity=".62" ${M}>${reset}</text>` : '')
     + `<g transform="translate(16 74)">${clawd(5, mood)}</g>`
     + battery(116, 60, 150, 48, left, col)
     + pixelText(`${left}%`, 116, 122, 4.5, col)
-    + `<text x="${n2(116 + String(left).length * 18 + 26)}" y="144" font-size="11" letter-spacing="1.4" opacity=".55" ${M}>LEFT</text>`
+    + `<text x="${n2(116 + String(left).length * 18 + 26)}" y="144" font-size="11" letter-spacing="1.4" opacity=".55" ${M}>${L.left}</text>`
   if (sub) {
     const f = pct(five), fc = f > 50 ? '#6fe08a' : f > 20 ? '#ffc94d' : '#ff5e57', fIn = resetsIn(five)
     body += `<line x1="24" x2="276" y1="156" y2="156" stroke="#ffffff" stroke-opacity=".08"/>`
       + `<text x="24" y="171" font-size="10.5" letter-spacing="1.2" opacity=".55" ${M}>5H</text>`
       + `<g shape-rendering="crispEdges">${Array.from({ length: 10 }, (_, i) => `<rect x="${46 + i * 9}" y="163" width="7" height="8" fill="${i < Math.ceil(f / 10) ? fc : '#ffffff'}" opacity="${i < Math.ceil(f / 10) ? 1 : 0.1}"/>`).join('')}</g>`
-      + `<text x="276" y="171" font-size="10.5" text-anchor="end" opacity=".62" ${M}>${f}%${Number.isFinite(fIn) ? ` · refills ${clock(fIn)}` : ''}</text>`
+      + `<text x="276" y="171" font-size="10.5" text-anchor="end" opacity=".62" ${M}>${f}%${Number.isFinite(fIn) ? ` · ${L.refills} ${clock(fIn)}` : ''}</text>`
   }
   return { h: H, body: body + '</g>', left }
 }
@@ -156,7 +161,8 @@ const SPOT_AT = {
 const SIZES = { tiny: 0.5, small: 0.62, medium: 0.75, large: 0.88, xlarge: 1 }
 const RATIOS = [[0.5, 1], [1, 1.15], [1.15, 1.3], [1.3, 1.45], [1.45, 1.6], [1.6, 1.8], [1.8, 2.05], [2.05, 2.4], [2.4, 3.2], [3.2, 9]]
 const ratio = r => `${Math.round(r * 1000)}/1000`
-function scene(u, now, spot, size, opacity) {
+function scene(u, now, spot, size, opacity, lang) {
+  L = TEXT[lang] ?? TEXT.es
   CARD_OPACITY = { solid: 1, normal: 0.9, glass: 0.62 }[opacity] ?? 0.9
   const at = SPOT_AT[spot] ?? SPOT_AT.right, k = SIZES[size] ?? SIZES.medium
   let fg = '', css = ''
@@ -200,7 +206,7 @@ export const register = (on, options) => {
     let u = null
     try { u = await $.session.usage() } catch {} // no figures yet: the ground alone
     const { Svg } = $.ui.resolve(e)
-    return Svg({ source: scene(u, await $.clock.now(), options?.position, options?.size, options?.opacity), alt: 'Claude battery: your weekly usage left', isInteractive: true })
+    return Svg({ source: scene(u, await $.clock.now(), options?.position, options?.size, options?.opacity, options?.language), alt: (TEXT[options?.language] ?? TEXT.es).alt, isInteractive: true })
   })
 }
 export { card, scene }

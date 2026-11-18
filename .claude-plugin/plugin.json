@@ -50,6 +50,16 @@
         "show"
       ],
       "default": "hide"
+    },
+    "language": {
+      "type": "string",
+      "title": "Language",
+      "description": "Language of the card's text: es (Spanish) or en (English)",
+      "options": [
+        "es",
+        "en"
+      ],
+      "default": "es"
     }
   },
   "license": "MIT",

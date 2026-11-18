@@ -22,7 +22,7 @@ test('the theme is set once, and the battery redraws when usage moves', async ($
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   const ui = await $.ui.mount({ ...BACKDROP, surface: 'desktop' })
   const first = await source(ui)
-  expect(first).toContain('CLAUDE · WEEKLY')
+  expect(first).toContain('USO SEMANAL')
   expect(first.length).toBeLessThan(131072)
 
   week = 85 // 15% left: a different battery

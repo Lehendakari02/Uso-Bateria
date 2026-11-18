@@ -37,8 +37,8 @@ Es una versión modificada de [Handsher/usage-battery](https://github.com/Handsh
 | **0 %** | Se queda dormido y le salen "z". |
 
 Además:
-- **Arriba a la derecha** del recuadro sale cuándo se reinicia el límite semanal (por ejemplo `resets Sat 10:00`).
-- **En la fila de abajo** (`5H`) está el límite de 5 horas y a qué hora se recarga.
+- **Arriba a la derecha** del recuadro sale cuándo se renueva el límite semanal (por ejemplo `renueva sáb 10:00`, o `renueva hoy 10:00` si es el mismo día).
+- **En la fila de abajo** (`5H`) está el límite de 5 horas y a qué hora se recarga (`60% · recarga 13:00`).
 - Los números se actualizan después de cada respuesta de Claude, y el reloj cada minuto.
 
 ## Instalación
@@ -101,7 +101,7 @@ Claude ejecutará los comandos de la opción 3 y te pedirá permiso antes.
 
 En todos los casos, **abre una sesión nueva** al terminar.
 
-## Ajustes: posición, tamaño, fondo y móvil
+## Ajustes: posición, tamaño, fondo, móvil e idioma
 
 Se cambian en el **menú de configuración del plugin**: botón **+** → **Plugins** → `usage-battery-solo`, o `/plugin` en Claude Code. Después de cambiar algo, abre una sesión nueva para verlo.
 
@@ -111,6 +111,7 @@ Se cambian en el **menú de configuración del plugin**: botón **+** → **Plug
 | **Size** (tamaño) | `tiny`, `small`, `medium`, `large`, `xlarge` | `medium` |
 | **Card background** (fondo del recuadro) | `solid`, `normal`, `glass` | `normal` |
 | **On the phone** (en el móvil) | `hide`, `show` | `hide` |
+| **Language** (idioma del recuadro) | `es`, `en` | `es` |
 
 ### Posiciones
 
@@ -131,6 +132,10 @@ En portátiles o ventanas estrechas, quédate en `medium` o menos. `large` y `xl
 ![Opciones de fondo](assets/op.png)
 
 `solid` es totalmente opaco, `normal` es casi opaco y `glass` deja ver un poco lo que hay detrás.
+
+### Idioma
+
+Los textos del recuadro salen **en castellano** (`USO SEMANAL`, `QUEDA`, `renueva`, `recarga`). Si algún amigo lo prefiere en inglés, que ponga `en` en **Language**.
 
 ### En el móvil
 
@@ -167,6 +172,7 @@ En **+** → **Plugins**, desactiva o elimina `usage-battery-solo`, o con `claud
 - Tamaños más pequeños (el `xlarge` de aquí es el `medium` del original) y uno nuevo, `tiny`.
 - Opción nueva **Card background** (`solid`, `normal`, `glass`).
 - Opción nueva **On the phone**: oculto en el móvil por defecto.
+- Textos del recuadro traducidos al castellano, con opción **Language** para volver al inglés.
 - Nombre nuevo, `usage-battery-solo`, para que no se mezcle con el original.
 
 ## Créditos y licencia
