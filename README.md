@@ -63,7 +63,7 @@ Necesitas **Claude Desktop** (la app de escritorio). Elige la forma que te resul
 
 1. Abre la página de **Plugins**: en el menú de la izquierda, o con el botón **+** de la caja donde escribes a Claude.
 2. Pulsa el botón **Añadir**, arriba a la derecha (al lado del embudo). **No uses el buscador:** solo busca en el catálogo oficial y este plugin no sale ahí.
-3. Elige la opción para añadir un **marketplace** (en inglés, *Add marketplace*) y escribe:
+3. En el menú que se abre, elige **Añadir marketplace** (la última opción; en inglés, *Add marketplace*) y escribe:
    ```
    Lehendakari02/Uso-Bateria
    ```
@@ -71,7 +71,7 @@ Necesitas **Claude Desktop** (la app de escritorio). Elige la forma que te resul
 5. Elige los ajustes, o deja los de por defecto.
 6. **Abre una sesión nueva.** La batería aparece en las sesiones que empiezan después de instalarla.
 
-> Si en tu versión de la app el menú de **Añadir** no tiene la opción de marketplace, usa la opción 2, 3 o 4: hacen lo mismo.
+> Si en tu versión de la app el menú de **Añadir** no tiene **Añadir marketplace**, usa la opción 2, 3 o 4: hacen lo mismo.
 
 ### Opción 2: con un comando en Claude Code
 
