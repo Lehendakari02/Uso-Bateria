@@ -67,7 +67,7 @@ Necesitas **Claude Desktop** (la app de escritorio). Elige la forma que te resul
    ```
    Lehendakari02/Uso-Bateria
    ```
-4. En la lista de ese marketplace sale **uso-bateria**: pulsa **Instalar** (*Install* o *Add plugin*).
+4. Aparece la tarjeta **Uso bateria**: pulsa el botón **+** para instalarla (**Probar** solo abre un chat de prueba).
 5. Elige los ajustes, o deja los de por defecto.
 6. **Abre una sesión nueva.** La batería aparece en las sesiones que empiezan después de instalarla.
 

@@ -1,7 +1,7 @@
 {
   "name": "uso-bateria",
   "version": "2.0.0",
-  "description": "Clawd beside a pixel battery of your weekly Claude usage, in a small panel of the Claude Desktop app",
+  "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en un mini panel de Claude Desktop",
   "userConfig": {
     "mode": {
       "type": "string",
