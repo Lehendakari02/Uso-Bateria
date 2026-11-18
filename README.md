@@ -27,6 +27,13 @@ Clawd, la mascota de Claude, al lado de una **batería pixelada** que te dice cu
 
 > Las capturas son simulaciones de Claude Desktop (a 2000 × 1080, salvo la del portátil). El recuadro y sus animaciones son los reales; el sitio exacto del mini panel lo decide la app.
 
+## Dónde funciona
+
+- ✅ En las sesiones de **Claude Code** de la app de escritorio (la pestaña **Code**) que trabajan en una carpeta de **tu ordenador**.
+- ❌ En las **conversaciones normales** de Claude: allí los plugins solo aportan habilidades y conectores, no pueden dibujar paneles.
+- ❌ En la terminal no se dibuja (solo sale una línea de texto con el porcentaje).
+- ❔ En las sesiones de Claude Code **en la nube** solo funcionaría si el plugin estuviera instalado en ese entorno; está sin probar.
+
 ## Qué hace Clawd según la batería
 
 ![Estados de Clawd](assets/moods.png)
@@ -59,19 +66,22 @@ El modo se cambia en los ajustes, en la opción **Mode**.
 
 Necesitas **Claude Desktop** (la app de escritorio). Elige la forma que te resulte más cómoda; todas instalan lo mismo.
 
-### Opción 1: desde la app, con botones
+### Opción 1: desde la app, dentro de Claude Code
 
-1. Abre la página de **Plugins**: en el menú de la izquierda, o con el botón **+** de la caja donde escribes a Claude.
-2. Pulsa el botón **Añadir**, arriba a la derecha (al lado del embudo). **No uses el buscador:** solo busca en el catálogo oficial y este plugin no sale ahí.
-3. En el menú que se abre, elige **Añadir marketplace** (la última opción; en inglés, *Add marketplace*) y escribe:
+> ⚠️ **Hazlo desde una sesión de Claude Code**, no desde la página **Plugins** del menú de la izquierda. Esa página instala plugins para las conversaciones normales, y ahí la batería no se ve.
+
+1. Abre la pestaña **Code** y empieza una sesión en una carpeta de tu ordenador.
+2. En la caja donde escribes, pulsa el botón **+** y entra en **Plugins**.
+3. Pulsa **Añadir** (arriba a la derecha) → **Añadir marketplace** (*Add marketplace*) y escribe:
    ```
    Lehendakari02/Uso-Bateria
    ```
+   **No uses el buscador:** solo busca en el catálogo oficial y este plugin no sale ahí.
 4. Aparece la tarjeta **Uso bateria**: pulsa el botón **+** para instalarla (**Probar** solo abre un chat de prueba).
 5. Elige los ajustes, o deja los de por defecto.
-6. **Abre una sesión nueva.** La batería aparece en las sesiones que empiezan después de instalarla.
+6. **Abre una sesión nueva de Claude Code** y escribe cualquier mensaje. La batería aparece en una esquina; si no, escribe `/bateria`.
 
-> Si en tu versión de la app el menú de **Añadir** no tiene **Añadir marketplace**, usa la opción 2, 3 o 4: hacen lo mismo.
+> Si no ves la batería, la forma más segura de instalarla es la **opción 3** (terminal). Instala el plugin para todas tus sesiones de Claude Code, también las de la app.
 
 ### Opción 2: con un comando en Claude Code
 
@@ -209,6 +219,12 @@ No: la app no avisa a los plugins cuando arrastras el ratón. En modo panel la c
 
 **He cerrado el mini panel, ¿cómo lo recupero?**
 Escribe `/bateria`, o abre una sesión nueva.
+
+**Lo he instalado y no sale nada.**
+1. Comprueba que estás en una sesión de **Claude Code** (pestaña **Code**) de tu ordenador, no en una conversación normal.
+2. Abre una sesión **nueva** después de instalar y envía un mensaje.
+3. Escribe `/bateria`. Si te dice que el comando no existe, el plugin no está cargado en Claude Code: instálalo con la **opción 3** (terminal) y abre otra sesión.
+4. En la terminal, `claude plugin list` debe mostrar `uso-bateria@uso-bateria` como *enabled*.
 
 **¿Funciona con otros temas o fondos?**
 En modo panel, sí, con cualquiera. En modo fondo, la batería ocupa el fondo de la ventana, y ahí solo cabe una cosa: si otro plugin pone un fondo o una foto, se pisan y solo se ve uno.

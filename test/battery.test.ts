@@ -117,3 +117,16 @@ test('/bateria-mover shows the hint, and typed again calls the move off', { opti
   expect(await source(ui)).not.toContain('Haz clic donde quieras ponerme')
   await ui.unmount()
 })
+
+test('panel mode: the first message opens the panel again, once', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  let opens = 0
+  on('ui.open', () => (opens++, { value: { isPlaced: true } }))
+  on('prompt.submit', (_: unknown, e: any) => ({ text: e.text }))
+  engine(on, () => 30)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  expect(opens).toBe(1)
+  await $.prompt.submit({ text: 'hola' } as any)
+  await $.prompt.submit({ text: 'otra' } as any)
+  expect(opens).toBe(2)
+})

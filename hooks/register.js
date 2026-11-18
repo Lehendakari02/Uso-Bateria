@@ -310,6 +310,12 @@ export const register = (on, options) => {
     }
     return next(e)
   })
+  // an app may leave a pane opened unasked undrawn; one opened with the person's first message is theirs
+  let askedOpen = false
+  on('prompt.submit', async ($, e, next) => {
+    if (mode === 'panel' && !askedOpen) { askedOpen = true; void openPane($, say('Batería', 'Battery')) }
+    return next(e)
+  })
   // the figures moved (after each answer, or a window moved a point): draw the battery again
   on('session.measure', ($, e, next) => { $.ui.invalidate('ui.render'); return next(e) })
 
