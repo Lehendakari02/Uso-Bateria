@@ -185,7 +185,9 @@ También valen los nombres en inglés (`size large`, `style compact`, `position 
 
 ### Desde la configuración del plugin
 
-Son los mismos ajustes, en inglés (`mode`, `position`, `size`, `style`, `opacity`, `language`, `mobile`). Lo que cambies con `/bateria-ajustes` tiene prioridad. Después de cambiarlos, abre una sesión nueva.
+Son los mismos ajustes. Lo que cambies con `/bateria-ajustes` tiene prioridad. Después de cambiarlos, abre una sesión nueva.
+
+- **En la app:** **Plugins** → **Uso bateria** → pestaña **Ajustes** → **Guardar**.
 
 - **En el chat de Claude Code:**
   ```
@@ -200,7 +202,7 @@ Son los mismos ajustes, en inglés (`mode`, `position`, `size`, `style`, `opacit
   echo '{"size":"medium","style":"full"}' | claude plugin configure uso-bateria@uso-bateria --values-stdin
   ```
 
-> La página **Plugins** de la app solo muestra el resumen y los archivos del plugin, no sus ajustes: usa `/bateria-ajustes`.
+> En la app: **Plugins** → **Uso bateria** → pestaña **Ajustes**, y pulsa **Guardar**. Esos valores se guardan en tu ordenador y los usan las sesiones locales nuevas.
 
 ### Tamaños
 
