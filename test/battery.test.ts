@@ -168,3 +168,21 @@ test('/bateria-ajustes lists the settings and changes them, in Spanish words too
   const reset = String(((await $.command.run({ command: 'bateria-ajustes', args: 'reset' } as any)) as any)?.text)
   expect(reset).toContain('borrados')
 })
+
+test('/bateria-diagnostico says what the app answered', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  on('ui.open', () => ({ value: { isPlaced: false, reason: 'no panes here' } }))
+  on('theme.set', () => ({ value: { isDrawn: false, reason: 'no look drawn' } }))
+  on('ui.panes', () => ({ value: [] }))
+  engine(on, () => 30)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  const text = String(((await $.command.run({ command: 'bateria-diagnostico', args: '' } as any)) as any)?.text)
+  expect(text).toContain('no panes here')
+  expect(text).toContain('no look drawn')
+  expect(text).toContain('seven_day: 70% queda')
+})
+
+test('before any usage figures, the background shows a waiting card', () => {
+  const svg = scene(null, NOW, 'bottom-right', 'small', 'normal', 'es', 'full')
+  expect(svg).toContain('esperando datos de uso')
+})

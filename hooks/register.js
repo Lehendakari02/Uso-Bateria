@@ -7,8 +7,8 @@ const n2 = x => +x.toFixed(3)
 const mix = (x, y, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(x.slice(i, i + 2), 16) * (1 - t) + parseInt(y.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('')
 // the card's words, in Spanish (default) or English
 const TEXT = {
-  es: { days: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'], week: 'USO SEMANAL', five: 'USO · 5 HORAS', ctx: 'CONTEXTO', resets: (d, t) => `renueva ${d ?? 'hoy'} ${t}`, left: 'QUEDA', refills: 'recarga', alt: 'Batería de Claude: lo que te queda de uso semanal' },
-  en: { days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], week: 'CLAUDE · WEEKLY', five: 'CLAUDE · 5 HOURS', ctx: 'CLAUDE · CONTEXT', resets: (d, t) => `resets ${d ?? 'at'} ${t}`, left: 'LEFT', refills: 'refills', alt: 'Claude battery: your weekly usage left' },
+  es: { days: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'], week: 'USO SEMANAL', five: 'USO · 5 HORAS', ctx: 'CONTEXTO', resets: (d, t) => `renueva ${d ?? 'hoy'} ${t}`, waiting: 'esperando datos de uso…', left: 'QUEDA', refills: 'recarga', alt: 'Batería de Claude: lo que te queda de uso semanal' },
+  en: { days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], week: 'CLAUDE · WEEKLY', five: 'CLAUDE · 5 HOURS', ctx: 'CLAUDE · CONTEXT', resets: (d, t) => `resets ${d ?? 'at'} ${t}`, waiting: 'waiting for usage figures…', left: 'LEFT', refills: 'refills', alt: 'Claude battery: your weekly usage left' },
 }
 let L = TEXT.es
 // ---------- the Claude battery: Clawd beside a pixel battery of the week's usage ----------
@@ -177,6 +177,18 @@ function compactCard(u, now) {
   return { h: H, body: body + '</g>', left }
 }
 
+// ---------- the card before any usage figures came: Clawd walks beside an empty battery ----------
+function waitingCard(now) {
+  const H = 154, M = 'font-family="ui-monospace,Menlo,monospace" fill="#ffffff"'
+  const body = `<rect width="300" height="${H}" rx="24" fill="${GROUND}" fill-opacity="${CARD_OPACITY}" stroke="#ffffff" stroke-opacity=".12"/>`
+    + `<g class="cbw">${CB_CSS}<style>.cbw *{animation-delay:calc(var(--d,0s) - ${n2((now % 60000) / 1000)}s)!important}</style>`
+    + `<text x="24" y="33" font-size="11" font-weight="600" letter-spacing="1.3" opacity=".62" ${M}>${L.week}</text>`
+    + `<g transform="translate(16 74)">${clawd(5, 'walk')}</g>`
+    + battery(116, 60, 150, 48, 0, '#ffffff')
+    + `<text x="116" y="138" font-size="11" letter-spacing="1" opacity=".62" ${M}>${L.waiting}</text>`
+  return { h: H, body: body + '</g>', left: null }
+}
+
 // where each spot sits in the 1600 x 1000 scene: cx is the card's centre, in the free strip beside the chat column
 // (right of it, or left of it between the sidebar and the chat), never in the far corner or under the header;
 // the bottom ones sit level with the prompt box (their foot 18 above the window's foot)
@@ -194,8 +206,8 @@ function scene(u, now, spot, size, opacity, lang, style, place, hint) {
   CARD_OPACITY = { solid: 1, normal: 0.9, glass: 0.62 }[opacity] ?? 0.9
   const at = SPOT_AT[spot] ?? SPOT_AT['bottom-right'], k = SIZES[size] ?? SIZES.small
   let fg = '', css = ''
-  if (u) {
-    const c = style === 'compact' ? compactCard(u, now) : card(u, now), w = 300 * k, h = c.h * k
+  {
+    const c = !u ? waitingCard(now) : style === 'compact' ? compactCard(u, now) : card(u, now), w = 300 * k, h = c.h * k
     // while /bateria-mover waits: a pulsing frame round the card and a label over it
     if (hint) c.body += `<g class="cb-move"><rect x="-8" y="-8" width="316" height="${c.h + 16}" rx="30" fill="none" stroke="#ffffff" stroke-width="3" stroke-dasharray="10 8"/>`
       + `<rect x="10" y="-52" width="280" height="34" rx="17" fill="#ffffff"/><text x="150" y="-29" font-size="16" font-weight="600" text-anchor="middle" fill="#0b1717">${hint}</text></g>`
@@ -297,22 +309,26 @@ function setBackdrop($) {
 export const register = (on, options) => {
   // this session's state: whether the backdrop is set, and whether the app shows the panel
   let fondoOn = false, paneShown = false, askedOpen = false
+  // what the app answered, for /bateria-diagnostico
+  const diag = { open: 'sin pedir', theme: 'sin pedir' }
+  const seen = r => (r == null ? 'sin respuesta' : r.error ? 'error: ' + r.error : JSON.stringify(r))
 
   on('session.start', async ($, e, next) => {
     const s = await settingsOf($, options)
-    if (s.mode === 'fondo') { await setBackdrop($); fondoOn = true }
+    if (s.mode === 'fondo') { diag.theme = seen(await setBackdrop($).catch(err => ({ error: String(err?.message ?? err) }))); fondoOn = true }
     else {
       // the panel touches no theme: it sits beside any background, and the app moves it as panels open and close
-      const r = await openPane($, s.language).catch(() => null)
+      const r = await openPane($, s.language).catch(err => ({ error: String(err?.message ?? err) })); diag.open = seen(r)
       paneShown = r?.isPlaced === true
       // auto: where the app does not show the panel, the card goes on the background instead
-      if (s.mode === 'auto' && !paneShown) { await setBackdrop($); fondoOn = true }
+      if (s.mode === 'auto' && !paneShown) { diag.theme = seen(await setBackdrop($).catch(err => ({ error: String(err?.message ?? err) }))); fondoOn = true }
     }
     await $.store.delete(MOVING) // a move left waiting in an earlier session is dropped
     const l = s.language
     await $.command.register({ name: 'bateria', description: sayIn(l, 'Abre la batería si la cerraste', 'Open the battery if you closed it') })
     await $.command.register({ name: 'bateria-ajustes', description: sayIn(l, 'Cambia la batería: tamaño, posición, estilo, modo, idioma…', 'Change the battery: size, position, style, mode, language…'), argumentHint: sayIn(l, '[ajuste valor]', '[setting value]') })
     await $.command.register({ name: 'bateria-mover', description: sayIn(l, 'Mueve la batería: el siguiente clic en un hueco vacío la coloca (en el fondo)', 'Move the battery: the next click on an empty spot places it (on the background)') })
+    await $.command.register({ name: 'bateria-diagnostico', description: sayIn(l, 'Explica por qué no se ve la batería: qué contesta la app', 'Why the battery does not show: what the app answered') })
     await $.command.register({ name: 'bateria-reset', description: sayIn(l, 'Devuelve la batería a la posición de los ajustes', 'Put the battery back where the settings say') })
     timer ??= $.clock.every(60000, () => $.ui.invalidate('ui.render')) // the reset clock moves each minute
     return next(e)
@@ -321,9 +337,9 @@ export const register = (on, options) => {
   on('command.run', { command: 'bateria' }, async $ => {
     const s = await settingsOf($, options), l = s.language
     if (s.mode === 'fondo') return { text: sayIn(l, 'La batería está en el fondo de la ventana (modo fondo). Para cambiarla de sitio, usa /bateria-mover.', 'The battery is on the window background (fondo mode). To move it, use /bateria-mover.') }
-    const r = await openPane($, l).catch(() => null)
+    const r = await openPane($, l).catch(err => ({ error: String(err?.message ?? err) })); diag.open = seen(r)
     if (r?.isPlaced === true) { paneShown = true; $.ui.invalidate('ui.render'); return { text: sayIn(l, 'Batería abierta.', 'Battery opened.') } }
-    if (!fondoOn) { await setBackdrop($); fondoOn = true }
+    if (!fondoOn) { diag.theme = seen(await setBackdrop($).catch(err => ({ error: String(err?.message ?? err) }))); fondoOn = true }
     $.ui.invalidate('ui.render')
     return { text: sayIn(l, 'La app no muestra paneles aquí, así que la batería va en el fondo de la ventana.', 'The app shows no panels here, so the battery goes on the window background.') }
   })
@@ -351,11 +367,11 @@ export const register = (on, options) => {
     const s = await settingsOf($, options), l = s.language
     // a new mode takes effect at once
     if (s.mode !== before.mode) {
-      if (s.mode === 'fondo') { await $.ui.close({ id: PANE }).catch(() => {}); paneShown = false; if (!fondoOn) { await setBackdrop($); fondoOn = true } }
+      if (s.mode === 'fondo') { await $.ui.close({ id: PANE }).catch(() => {}); paneShown = false; if (!fondoOn) { diag.theme = seen(await setBackdrop($).catch(err => ({ error: String(err?.message ?? err) }))); fondoOn = true } }
       else {
-        const r = await openPane($, l).catch(() => null)
+        const r = await openPane($, l).catch(err => ({ error: String(err?.message ?? err) })); diag.open = seen(r)
         paneShown = r?.isPlaced === true
-        if (s.mode === 'auto' && !paneShown && !fondoOn) { await setBackdrop($); fondoOn = true }
+        if (s.mode === 'auto' && !paneShown && !fondoOn) { diag.theme = seen(await setBackdrop($).catch(err => ({ error: String(err?.message ?? err) }))); fondoOn = true }
       }
     }
     $.ui.invalidate('ui.render')
@@ -377,6 +393,24 @@ export const register = (on, options) => {
     await $.store.set(MOVING, true)
     $.ui.invalidate('ui.render')
     return { text: sayIn(l, 'Haz clic en un hueco vacío de la ventana y la batería se colocará ahí. Para cancelar, vuelve a escribir /bateria-mover.', 'Click an empty spot of the window and the battery goes there. To cancel, type /bateria-mover again.') }
+  })
+  on('command.run', { command: 'bateria-diagnostico' }, async $ => {
+    const s = await settingsOf($, options)
+    let usage = 'sin datos'
+    try {
+      const u = await $.session.usage()
+      if (u) usage = (u.rateLimits ?? []).map(r => `${r.kind}: ${Math.round(100 - r.percentUsed)}% queda`).join(', ') || `sin límites de plan; contexto usado ${u.context?.percent ?? '?'}%`
+    } catch (err) { usage = 'error: ' + String(err?.message ?? err) }
+    let panes = '?'
+    try { panes = JSON.stringify(await $.ui.panes()) } catch (err) { panes = 'error: ' + String(err?.message ?? err) }
+    return { text: [
+      'Diagnóstico de la batería:',
+      `  modo: ${s.mode} · tamaño: ${s.size} · estilo: ${s.style} · posición: ${s.position}`,
+      `  mini panel pedido → la app contestó: ${diag.open}`,
+      `  mini panel mostrado: ${paneShown ? 'sí' : 'no'} · paneles: ${panes}`,
+      `  fondo pedido → la app contestó: ${diag.theme}`,
+      `  datos de uso: ${usage}`,
+    ].join('\n') }
   })
   on('command.run', { command: 'bateria-reset' }, async $ => {
     const s = await settingsOf($, options)
@@ -404,7 +438,7 @@ export const register = (on, options) => {
       try {
         const s = await settingsOf($, options)
         if (s.mode !== 'fondo') {
-          const r = await openPane($, s.language).catch(() => null)
+          const r = await openPane($, s.language).catch(err => ({ error: String(err?.message ?? err) })); diag.open = seen(r)
           if (r?.isPlaced === true && !paneShown) { paneShown = true; $.ui.invalidate('ui.render') }
         }
       } catch {}

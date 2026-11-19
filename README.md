@@ -136,6 +136,7 @@ Se escriben en el chat:
 | `/bateria` | Vuelve a abrir el mini panel si lo has cerrado. |
 | `/bateria-ajustes` | Muestra los ajustes y los cambia al momento (ver **Ajustes**). |
 | `/bateria-mover` | **En el fondo:** la batería se marca con un borde que parpadea y el aviso *"Haz clic donde quieras ponerme"*. El siguiente clic en un hueco vacío de la ventana la coloca ahí. Escríbelo otra vez para cancelar. |
+| `/bateria-diagnostico` | Si no ves la batería: te dice qué ha contestado la app al pedirle el mini panel y el fondo, y si hay datos de uso. |
 | `/bateria-reset` | **En el fondo:** devuelve la batería a la posición de los ajustes. |
 
 ![Moviendo la batería con /bateria-mover](assets/mover.png)
@@ -250,7 +251,7 @@ Escribe `/bateria`, o abre una sesión nueva.
 **Lo he instalado y no sale nada.**
 1. Comprueba que estás en una sesión de **Claude Code** (pestaña **Code**) de tu ordenador, no en una conversación normal.
 2. Abre una sesión **nueva** después de instalar y envía un mensaje.
-3. Escribe `/bateria`. Si te dice que el comando no existe, el plugin no está cargado en Claude Code: instálalo con la **opción 3** (terminal) y abre otra sesión.
+3. Escribe `/bateria-diagnostico` y mira qué ha contestado la app. Si te dice que el comando no existe, el plugin no está cargado en Claude Code: instálalo con la **opción 3** (terminal) y abre otra sesión.
 4. En la terminal, `claude plugin list` debe mostrar `uso-bateria@uso-bateria` como *enabled*.
 
 **¿Funciona con otros temas o fondos?**
