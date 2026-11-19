@@ -245,7 +245,11 @@ En la app del móvil no hay sitio libre al lado del chat, así que la batería v
 No. Solo lee los números de uso que Claude ya tiene y no llama a la IA. Tampoco envía nada a ningún sitio.
 
 **¿Qué número muestra?**
-Con un plan Pro o Max, el límite semanal. Si usas Claude con una clave de API (sin límites de plan), muestra cuánto te queda de la ventana de contexto.
+Depende de cómo uses Claude, y la cabecera del recuadro lo dice:
+- **Plan Pro o Max** → `USO SEMANAL`: lo que te queda del límite semanal, con el de 5 horas debajo. Si solo llega el de 5 horas, sale `USO · 5 HORAS`.
+- **Clave de API**, sin límites de plan → `CONTEXTO`: cuánto te queda de la ventana de contexto de la conversación.
+- **Una pasarela con límite de gasto** → `LÍMITE`: lo que te queda de ese límite.
+- **Al abrir una sesión, antes de la primera respuesta**: los últimos límites que vio, si aún no se han renovado, o *"esperando datos de uso…"*. En cuanto Claude responde, sale el número de verdad, también si has pasado de un plan a una clave de API.
 
 **¿La puedo arrastrar con el ratón?**
 No: la app no avisa a los plugins cuando arrastras el ratón. En el mini panel la coloca la app. En el fondo, usa `/bateria-mover` y haz clic donde la quieras.

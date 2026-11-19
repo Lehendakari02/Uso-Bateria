@@ -269,3 +269,27 @@ test('never had plan limits (an API key): the context window', async ($, on) => 
   expect(await source(ui)).toContain('CONTEXTO')
   await ui.unmount()
 })
+
+test('once Claude answered with no plan limits (an API key), the context shows, remembered limits or not', async ($, on) => {
+  const clock = mock.clock(on, { now: NOW })
+  mock.store(on, lastLimits(86400e3))
+  on('session.usage', () => ({ value: noLimits }))
+  on('theme.set', () => ({ value: { isDrawn: true, requestId: 'bg' } }))
+  on('session.start', (_: unknown, e: any) => ({ cwd: e.cwd }))
+  on('command.register', () => ({ value: undefined }))
+  on('turn.complete', () => ({ text: 'hola' }))
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  const ui = await $.ui.mount({ ...BACKDROP, surface: 'desktop' })
+  expect(await source(ui)).toContain('USO SEMANAL') // before the first answer: the remembered week
+  await $.turn.complete({ reason: 'answer', answer: 'hola', durationMs: 10, isAborted: false, turnId: 't1' } as any)
+  await clock.settle()
+  expect(await source(ui)).toContain('CONTEXTO') // answered without limits: the context window
+  await ui.unmount()
+})
+
+test('a gateway spend limit shows as LÍMITE, not as the context', () => {
+  const u = { context: { window: 200000, percent: 7 }, rateLimits: [{ kind: 'spend_limit', percentUsed: 40, resetsAt: new Date(NOW + 86400e3).toISOString() }] }
+  const svg = scene(u, NOW, 'bottom-right', 'small', 'normal', 'es', 'full')
+  expect(svg).toContain('LÍMITE')
+  expect(svg).not.toContain('CONTEXTO')
+})

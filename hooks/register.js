@@ -7,8 +7,8 @@ const n2 = x => +x.toFixed(3)
 const mix = (x, y, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(x.slice(i, i + 2), 16) * (1 - t) + parseInt(y.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('')
 // the card's words, in Spanish (default) or English
 const TEXT = {
-  es: { days: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'], week: 'USO SEMANAL', five: 'USO · 5 HORAS', ctx: 'CONTEXTO', resets: (d, t) => `renueva ${d ?? 'hoy'} ${t}`, waiting: 'esperando datos de uso…', left: 'QUEDA', refills: 'recarga', alt: 'Batería de Claude: lo que te queda de uso semanal' },
-  en: { days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], week: 'CLAUDE · WEEKLY', five: 'CLAUDE · 5 HOURS', ctx: 'CLAUDE · CONTEXT', resets: (d, t) => `resets ${d ?? 'at'} ${t}`, waiting: 'waiting for usage figures…', left: 'LEFT', refills: 'refills', alt: 'Claude battery: your weekly usage left' },
+  es: { days: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'], week: 'USO SEMANAL', five: 'USO · 5 HORAS', ctx: 'CONTEXTO', limit: 'LÍMITE', resets: (d, t) => `renueva ${d ?? 'hoy'} ${t}`, waiting: 'esperando datos de uso…', left: 'QUEDA', refills: 'recarga', alt: 'Batería de Claude: lo que te queda de uso semanal' },
+  en: { days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], week: 'CLAUDE · WEEKLY', five: 'CLAUDE · 5 HOURS', ctx: 'CLAUDE · CONTEXT', limit: 'CLAUDE · LIMIT', resets: (d, t) => `resets ${d ?? 'at'} ${t}`, waiting: 'waiting for usage figures…', left: 'LEFT', refills: 'refills', alt: 'Claude battery: your weekly usage left' },
 }
 let L = TEXT.es
 // ---------- the Claude battery: Clawd beside a pixel battery of the week's usage ----------
@@ -123,7 +123,7 @@ function pixelText(t, x, y, p, fill) {
 function card(u, now) {
   // the week's limit fills the battery; the 5-hour window rides under it; off a subscription, the context window
   const lim = u.rateLimits ?? [], five = lim.find(r => /five|5/.test(r.kind)), week = lim.find(r => /seven|7|week/.test(r.kind))
-  const main = week ?? five, pct = r => Math.max(0, Math.min(100, Math.round(100 - r.percentUsed)))
+  const main = week ?? five ?? lim.find(r => Number.isFinite(r?.percentUsed)), pct = r => Math.max(0, Math.min(100, Math.round(100 - r.percentUsed)))
   const left = main ? pct(main) : Math.max(0, Math.min(100, Math.round(100 - (u.context?.percent ?? 0))))
   const col = left > 50 ? '#6fe08a' : left > 20 ? '#ffc94d' : '#ff5e57'
   const mood = left === 0 ? 'sleep' : left <= 20 ? 'tired' : left > 60 ? 'happy' : 'walk'
@@ -135,7 +135,7 @@ function card(u, now) {
   const M = 'font-family="ui-monospace,Menlo,monospace" fill="#ffffff"'
   let body = `<rect width="300" height="${H}" rx="24" fill="${GROUND}" fill-opacity="${CARD_OPACITY}" stroke="#ffffff" stroke-opacity=".12"/>`
     + `<g class="cbw">${CB_CSS}<style>.cbw *{animation-delay:calc(var(--d,0s) - ${n2((now % 60000) / 1000)}s)!important}</style>`
-    + `<text x="24" y="33" font-size="11" font-weight="600" letter-spacing="1.3" opacity=".62" ${M}>${week ? L.week : five ? L.five : L.ctx}</text>`
+    + `<text x="24" y="33" font-size="11" font-weight="600" letter-spacing="1.3" opacity=".62" ${M}>${week ? L.week : five ? L.five : main ? L.limit : L.ctx}</text>`
     + (reset ? `<text x="276" y="33" font-size="11" text-anchor="end" opacity=".62" ${M}>${reset}</text>` : '')
     + `<g transform="translate(16 74)">${clawd(5, mood)}</g>`
     + battery(116, 60, 150, 48, left, col)
@@ -156,7 +156,7 @@ let CARD_OPACITY = 0.9
 // ---------- the compact card: 300 x 84, one low strip that sits well beside the prompt box ----------
 function compactCard(u, now) {
   const lim = u.rateLimits ?? [], five = lim.find(r => /five|5/.test(r.kind)), week = lim.find(r => /seven|7|week/.test(r.kind))
-  const main = week ?? five, pct = r => Math.max(0, Math.min(100, Math.round(100 - r.percentUsed)))
+  const main = week ?? five ?? lim.find(r => Number.isFinite(r?.percentUsed)), pct = r => Math.max(0, Math.min(100, Math.round(100 - r.percentUsed)))
   const left = main ? pct(main) : Math.max(0, Math.min(100, Math.round(100 - (u.context?.percent ?? 0))))
   const col = left > 50 ? '#6fe08a' : left > 20 ? '#ffc94d' : '#ff5e57'
   const mood = left === 0 ? 'sleep' : left <= 20 ? 'tired' : left > 60 ? 'happy' : 'walk'
@@ -241,9 +241,9 @@ function cardSvg(u, now, opacity, lang, style) {
 // a line of text, where no SVG is drawn (the terminal, where an Svg draws as nothing)
 function cardLine(u, now, lang) {
   L = TEXT[lang] ?? TEXT.es
-  const lim = u.rateLimits ?? [], week = lim.find(r => /seven|7|week/.test(r.kind)), five = lim.find(r => /five|5/.test(r.kind)), main = week ?? five
+  const lim = u.rateLimits ?? [], week = lim.find(r => /seven|7|week/.test(r.kind)), five = lim.find(r => /five|5/.test(r.kind)), main = week ?? five ?? lim.find(r => Number.isFinite(r?.percentUsed))
   const left = main ? Math.max(0, Math.min(100, Math.round(100 - main.percentUsed))) : Math.max(0, Math.min(100, Math.round(100 - (u.context?.percent ?? 0))))
-  return `${week ? L.week : five ? L.five : L.ctx}: ${left}% ${L.left.toLowerCase()}`
+  return `${week ? L.week : five ? L.five : main ? L.limit : L.ctx}: ${left}% ${L.left.toLowerCase()}`
 }
 // ---------- the settings: the plugin's options, with what /bateria-ajustes changed on top ----------
 const CHOICES = {
@@ -290,11 +290,13 @@ const sayIn = (lang, es, en) => (lang === 'en' ? en : es)
 // A session reports its plan limits only after its first answer, so a reopened app would show nothing, or the
 // context window as if it were the week. The last limits seen are kept, and shown until their window renews.
 const LAST = 'lastLimits' // $.store: { limits, at }, the last plan limits a session reported
-async function usageOf($) {
+// answeredWithout: Claude answered in this session and no plan limits came with it, as with an API key or a gateway:
+// then the context window is the right figure, whatever an earlier session remembered
+async function usageOf($, answeredWithout) {
   let u = null
   try { u = await $.session.usage() } catch {}
   if (!u) return null
-  if ((u.rateLimits ?? []).length > 0) return u
+  if ((u.rateLimits ?? []).length > 0 || answeredWithout) return u
   let last = null
   try { last = await $.store.get(LAST) } catch {}
   if (!last || !Array.isArray(last.limits)) return u // never had plan limits (an API key): the context window it is
@@ -324,7 +326,7 @@ function setBackdrop($) {
 }
 export const register = (on, options) => {
   // this session's state: whether the backdrop is set, and whether the app shows the panel
-  let fondoOn = false, paneShown = false, askedOpen = false
+  let fondoOn = false, paneShown = false, askedOpen = false, answeredWithout = false
   // what the app answered, for /bateria-diagnostico
   const diag = { open: 'sin pedir', theme: 'sin pedir' }
   const seen = r => (r == null ? 'sin respuesta' : r.error ? 'error: ' + r.error : JSON.stringify(r))
@@ -478,6 +480,19 @@ export const register = (on, options) => {
     return next(e)
   })
   // the figures moved (after each answer, or a window moved a point): draw the battery again
+  // after each answer: plan limits came (remember them) or did not (an API key: the context window it is)
+  on('turn.complete', async ($, e, next) => {
+    const done = await next(e)
+    if (!e.agentId) {
+      try {
+        const u = await $.session.usage()
+        const has = (u?.rateLimits ?? []).length > 0
+        if (has) await rememberLimits($, u.rateLimits)
+        if (answeredWithout === has) { answeredWithout = !has; $.ui.invalidate('ui.render') }
+      } catch {}
+    }
+    return done
+  })
   on('session.measure', async ($, e, next) => {
     await rememberLimits($, e.rateLimits)
     $.ui.invalidate('ui.render')
@@ -488,7 +503,7 @@ export const register = (on, options) => {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Text, Svg } = $.ui.resolve(e)
     const s = await settingsOf($, options), l = s.language
-    const u = await usageOf($)
+    const u = await usageOf($, answeredWithout)
     const now = await $.clock.now()
     if (!u || u.waitingLimits) return Text({ dimColor: true, children: sayIn(l, 'La batería aparece tras la primera respuesta.', 'The battery shows after the first answer.') })
     if (e.surface === 'terminal' || (e.surface === 'mobile' && s.mobile !== 'show')) return Text({ children: cardLine(u, now, l) })
@@ -505,7 +520,7 @@ export const register = (on, options) => {
     // a phone has no free strip beside the chat: there the card would sit behind the messages, so it shows
     // on the desktop app only, unless the person turns it on for the phone too
     if (e.surface !== 'desktop' && !(e.surface === 'mobile' && s.mobile === 'show')) return next(e)
-    const got = await usageOf($), u = got && !got.waitingLimits ? got : null // no figures yet: the waiting card
+    const got = await usageOf($, answeredWithout), u = got && !got.waitingLimits ? got : null // no figures yet: the waiting card
     // a spot chosen with /bateria-mover holds until the person picks another position
     let place = null, moving = false
     try { const p = await $.store.get(PLACE); if (p && typeof p.fx === 'number' && p.position === s.position) place = p } catch {}
