@@ -500,4 +500,4 @@ export const register = (on, options) => {
     return Svg({ source, alt: (TEXT[l] ?? TEXT.es).alt, isInteractive: true })
   })
 }
-export { card, compactCard, scene, cardSvg }
+export { card, compactCard, scene, cardSvg, clawd, battery }

@@ -1,7 +1,8 @@
 {
   "name": "uso-bateria",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en un mini panel de Claude Desktop",
+  "icon": "./.claude-plugin/icon.png",
   "userConfig": {
     "mode": {
       "type": "string",
