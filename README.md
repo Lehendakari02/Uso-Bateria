@@ -1,31 +1,27 @@
 # Uso-Bateria 🔋
 
-Clawd, la mascota de Claude, al lado de una **batería pixelada** que te dice cuánto te queda de tu uso **semanal** de Claude. Aparece en las sesiones de **Claude Code** de la app de escritorio: en un **mini panel** que la propia app coloca en una esquina del chat y recoloca al abrir o cerrar paneles, o, donde no hay paneles, **pintada en el fondo** de la ventana. Todo se ajusta escribiendo `/bateria-ajustes`.
+Clawd, la mascota de Claude, al lado de una **batería pixelada** que te dice cuánto te queda de tu uso **semanal** de Claude. Aparece en las sesiones de **Claude Code** de la app de escritorio, **pintada en el fondo** de la ventana, en el hueco libre junto al chat. La mueves con `/bateria-mover` y un clic, y lo ajustas todo con `/bateria-ajustes`.
 
-![Uso-Bateria en un chat](assets/chat.png)
+![Uso-Bateria en Claude Code](assets/chat.png)
 
 <details>
-<summary>Ver en Claude Code, en modo claro y en un portátil</summary>
-
-**Claude Code con el panel de la derecha abierto**
-
-![En Claude Code con el panel abierto](assets/panel.png)
-
-**Claude Code con la lista de hilos abierta**
-
-![En Claude Code con la lista de hilos](assets/code.png)
+<summary>Ver en modo claro, en un portátil y en modo panel</summary>
 
 **Modo claro**
 
 ![En modo claro](assets/light.png)
 
-**Portátil (1440 × 900)**
+**Portátil (1440 × 900)**: con el panel derecho abierto apenas queda hueco junto al chat; usa `/bateria-mover`, o el tamaño `diminuto`.
 
 ![En un portátil](assets/laptop.png)
 
+**Modo panel** (simulación de cómo quedará cuando la app tenga paneles pequeños)
+
+![Modo panel](assets/panel.png)
+
 </details>
 
-> Las capturas son simulaciones de Claude Desktop (a 2000 × 1080, salvo la del portátil). El recuadro y sus animaciones son los reales; el sitio exacto del mini panel lo decide la app.
+> Las capturas son simulaciones de Claude Code en la app de escritorio, con el panel derecho abierto, a 2000 × 1078 salvo la del portátil. El recuadro y sus animaciones son los reales.
 
 ## Dónde funciona
 
@@ -52,15 +48,17 @@ Además:
 
 ## Tres modos
 
-| | **Auto** (por defecto) | **Panel** | **Fondo** |
+| | **Fondo** (por defecto) | **Panel** | **Auto** |
 | --- | --- | --- | --- |
-| Dónde sale | En el mini panel; si la app no lo muestra, en el fondo | Siempre en el mini panel | Siempre pintado en el fondo de la ventana |
-| Paneles abiertos (Hilos, Contexto…) | La app recoloca el mini panel | La app lo recoloca | Un panel abierto lo puede tapar |
-| Fondos y temas | Compatible, salvo si tiene que pasar al fondo | Compatible con cualquiera | Ocupa el fondo: no se combina con otro tema que ponga fondo |
-| Cómo se mueve | Lo coloca la app (en el fondo, con `/bateria-mover`) | Lo coloca la app | Con `/bateria-mover` y un clic, o con la posición |
-| Tamaño | Fijo en píxeles (en el fondo, crece con la ventana) | Fijo en píxeles | Crece con la ventana |
+| Dónde sale | Pintada en el fondo de la ventana, junto al chat | En un panel de la app | En el panel; si la app no lo muestra, en el fondo |
+| Cómo se mueve | Con `/bateria-mover` y un clic, o con la posición | Lo coloca la app | Según dónde esté |
+| Paneles abiertos (Hilos, Contexto…) | Un panel puede taparla: muévela con `/bateria-mover` | La app lo recoloca | — |
+| Fondos y temas | Ocupa el fondo: no se combina con otro tema que ponga fondo | Compatible con cualquiera | — |
+| Hoy | ✅ Funciona en sesiones locales | ⚠️ La app lo abre como panel lateral grande, no como mini panel | ⚠️ Igual que panel |
 
-Para cambiar de modo: `/bateria-ajustes modo panel` (o `auto`, `fondo`). Se aplica al momento.
+El mini panel pequeño en una esquina depende de una función que la app todavía no tiene: el plugin ya lo pide, así que cuando la app lo añada bastará con `/bateria-ajustes modo panel`.
+
+Para cambiar de modo: `/bateria-ajustes modo fondo` (o `panel`, `auto`). Se aplica al momento.
 
 ## Instalación
 
@@ -173,7 +171,7 @@ Los cambios se ven al momento y se guardan para las próximas sesiones. Para vol
 
 | Ajuste | Valores | Por defecto |
 | --- | --- | --- |
-| `modo` | `auto`, `panel`, `fondo` | `auto` |
+| `modo` | `fondo`, `panel`, `auto` | `fondo` |
 | `posición` (en el fondo) | `abajo-derecha`, `derecha`, `arriba-derecha`, `abajo-izquierda`, `izquierda`, `arriba-izquierda` | `abajo-derecha` |
 | `tamaño` | `diminuto`, `pequeño`, `mediano`, `grande`, `muy-grande` | `pequeño` |
 | `estilo` | `completo`, `compacto` | `completo` |
@@ -221,11 +219,10 @@ En el fondo el recuadro crece con la ventana: `pequeño` mide unos 220 px de anc
 
 ### Posiciones (en el fondo)
 
-En el fondo, el recuadro va **en el hueco libre al lado del chat**: entre el chat y el borde derecho (las `right`) o entre la barra lateral y el chat (las `left`). Las `bottom` lo ponen a la altura de la caja donde escribes; las `top` lo suben, sin meterlo debajo de la barra de arriba. Si ninguna te encaja, usa `/bateria-mover`.
+En el fondo, el recuadro va **en el hueco libre al lado del chat**: a la derecha, entre el chat y el panel derecho de la app (las `derecha`), o a la izquierda, entre la barra lateral y el chat (las `izquierda`). Las `abajo` lo bajan y las `arriba` lo suben, sin cortarlo ni meterlo debajo de la barra de arriba. Si ninguna te encaja, usa `/bateria-mover`.
 
 ![Posiciones en modo fondo](assets/pos.png)
 
-![Modo fondo](assets/fondo.png)
 
 ### Fondo del recuadro
 
@@ -275,7 +272,7 @@ En **+** → **Plugins**, desactiva o elimina `uso-bateria`, o escribe `claude p
 
 ## Estado
 
-Es un proyecto en marcha. El modo auto, el mini panel, `/bateria-ajustes` y `/bateria-mover` son nuevos y aún se están probando en la app real. Si algo no se ve bien, abre un *issue* en este repositorio con una captura.
+Probado en Claude Code local de la app de escritorio: el modo fondo, `/bateria-mover`, `/bateria-ajustes` y `/bateria-diagnostico` funcionan. Pendiente de la app: el mini panel pequeño y las sesiones en la nube. Si algo no se ve bien, abre un *issue* en este repositorio con una captura.
 
 ## Créditos
 

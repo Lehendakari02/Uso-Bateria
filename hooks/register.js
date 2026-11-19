@@ -192,9 +192,12 @@ function waitingCard(now) {
 // where each spot sits in the 1600 x 1000 scene: cx is the card's centre, in the free strip beside the chat column
 // (right of it, or left of it between the sidebar and the chat), never in the far corner or under the header;
 // the bottom ones sit level with the prompt box (their foot 18 above the window's foot)
+// where each spot puts the card's centre, as fractions of the window, measured on Claude Code in the desktop app:
+// right of the chat column and clear of the panel the app docks on the right (Entorno, Contexto…), or left of the
+// chat between it and the sidebar; never on the window's edge, never cut at the foot
 const SPOT_AT = {
-  right: { cx: 1385, y: 500, h: 'r', v: 'm' }, 'top-right': { cx: 1385, y: 120, h: 'r', v: 't' }, 'bottom-right': { cx: 1385, y: 831, h: 'r', v: 'b' },
-  left: { cx: 410, y: 500, h: 'l', v: 'm' }, 'top-left': { cx: 410, y: 120, h: 'l', v: 't' }, 'bottom-left': { cx: 410, y: 831, h: 'l', v: 'b' },
+  'bottom-right': { fx: 0.73, fy: 0.78 }, right: { fx: 0.73, fy: 0.55 }, 'top-right': { fx: 0.73, fy: 0.25 },
+  'bottom-left': { fx: 0.235, fy: 0.78 }, left: { fx: 0.235, fy: 0.55 }, 'top-left': { fx: 0.235, fy: 0.25 },
 }
 const SIZES = { tiny: 0.5, small: 0.62, medium: 0.75, large: 0.88, xlarge: 1 }
 // the window shapes, in narrow bands: each moves the card by the crop of a window of its middle shape
@@ -204,38 +207,22 @@ const ratio = r => `${Math.round(r * 1000)}/1000`
 function scene(u, now, spot, size, opacity, lang, style, place, hint) {
   L = TEXT[lang] ?? TEXT.es
   CARD_OPACITY = { solid: 1, normal: 0.9, glass: 0.62 }[opacity] ?? 0.9
-  const at = SPOT_AT[spot] ?? SPOT_AT['bottom-right'], k = SIZES[size] ?? SIZES.small
-  let fg = '', css = ''
-  {
-    const c = !u ? waitingCard(now) : style === 'compact' ? compactCard(u, now) : card(u, now), w = 300 * k, h = c.h * k
-    // while /bateria-mover waits: a pulsing frame round the card and a label over it
-    if (hint) c.body += `<g class="cb-move"><rect x="-8" y="-8" width="316" height="${c.h + 16}" rx="30" fill="none" stroke="#ffffff" stroke-width="3" stroke-dasharray="10 8"/>`
-      + `<rect x="10" y="-52" width="280" height="34" rx="17" fill="#ffffff"/><text x="150" y="-29" font-size="16" font-weight="600" text-anchor="middle" fill="#0b1717">${hint}</text></g>`
-    if (place) {
-      // the scene is 1600 x 1000 cut to the window: the point (fx, fy) of the window lands somewhere else
-      // in the scene for each shape of window, so each band of shapes moves the card to the right place
-      const fx = Math.max(0.05, Math.min(0.95, place.fx)), fy = Math.max(0.05, Math.min(0.95, place.fy))
-      fg = `<g class="cb-at"><g transform="translate(${n2(fx * 1600 - w / 2)} ${n2(fy * 1000 - h / 2)}) scale(${k})">${c.body}</g></g>`
-      for (const [lo, hi] of BANDS) {
-        const r = hi > 5 ? 3.6 : (lo + hi) / 2
-        const dx = r < 1.6 ? (fx - 0.5) * (1000 * r - 1600) : 0, dy = r > 1.6 ? (fy - 0.5) * (1600 / r - 1000) : 0
-        if (Math.abs(dx) + Math.abs(dy) > 0.5) css += `@media (min-aspect-ratio:${ratio(lo)}) and (max-aspect-ratio:${ratio(hi)}){.cb-at{transform:translate(${n2(dx)}px,${n2(dy)}px)}}`
-      }
-      return wrap(css, fg)
-    }
-    const x = at.cx - w / 2, y = at.v === 'b' ? at.y + 160 - h : at.v === 'm' ? 500 - h / 2 : at.y
-    fg = `<g class="cb-at"><g class="cb-nudge"><g transform="translate(${n2(x)} ${n2(y)}) scale(${k})">${c.body}</g></g></g>`
-    // a window narrower than the scene cuts its sides; a wider one, its top and foot: keep the card in the corner
-    for (const [lo, hi] of BANDS) {
-      const r = hi > 5 ? 3.6 : (lo + hi) / 2
-      const dx = r < 1.6 ? (at.h === 'r' ? 500 * r - 800 : 800 - 500 * r) : 0
-      const dy = r > 1.6 ? (at.v === 't' ? 500 - 800 / r : at.v === 'b' ? 800 / r - 500 : 0) : 0
-      if (dx || dy) css += `@media (min-aspect-ratio:${ratio(lo)}) and (max-aspect-ratio:${ratio(hi)}){.cb-at{transform:translate(${n2(dx)}px,${n2(dy)}px)}}`
-    }
-    // the chat column keeps its width in pixels, so in a narrow window the strip on its right is thinner:
-    // there the card moves a little toward the window's edge to keep clear of the chat
-    if (at.h === 'r') css += '@media (min-aspect-ratio:1600/1000) and (max-width:1500px){.cb-nudge{transform:translateX(28px)}}'
-      + '@media (min-aspect-ratio:1600/1000) and (max-width:1300px){.cb-nudge{transform:translateX(51px)}}'
+  const k = SIZES[size] ?? SIZES.small
+  // a spot from /bateria-mover, else the one the settings name: both are a point of the window
+  const at = place ?? SPOT_AT[spot] ?? SPOT_AT['bottom-right']
+  const c = !u ? waitingCard(now) : style === 'compact' ? compactCard(u, now) : card(u, now), w = 300 * k, h = c.h * k
+  // while /bateria-mover waits: a pulsing frame round the card and a label over it
+  if (hint) c.body += `<g class="cb-move"><rect x="-8" y="-8" width="316" height="${c.h + 16}" rx="30" fill="none" stroke="#ffffff" stroke-width="3" stroke-dasharray="10 8"/>`
+    + `<rect x="10" y="-52" width="280" height="34" rx="17" fill="#ffffff"/><text x="150" y="-29" font-size="16" font-weight="600" text-anchor="middle" fill="#0b1717">${hint}</text></g>`
+  // the scene is 1600 x 1000 cut to the window: the point (fx, fy) of the window lands somewhere else
+  // in the scene for each shape of window, so each band of shapes moves the card to the right place
+  const fx = Math.max(0.05, Math.min(0.95, at.fx)), fy = Math.max(0.05, Math.min(0.95, at.fy))
+  const fg = `<g class="cb-at"><g transform="translate(${n2(fx * 1600 - w / 2)} ${n2(fy * 1000 - h / 2)}) scale(${k})">${c.body}</g></g>`
+  let css = ''
+  for (const [lo, hi] of BANDS) {
+    const r = hi > 5 ? 3.6 : (lo + hi) / 2
+    const dx = r < 1.6 ? (fx - 0.5) * (1000 * r - 1600) : 0, dy = r > 1.6 ? (fy - 0.5) * (1600 / r - 1000) : 0
+    if (Math.abs(dx) + Math.abs(dy) > 0.5) css += `@media (min-aspect-ratio:${ratio(lo)}) and (max-aspect-ratio:${ratio(hi)}){.cb-at{transform:translate(${n2(dx)}px,${n2(dy)}px)}}`
   }
   return wrap(css, fg)
 }
@@ -268,7 +255,7 @@ const CHOICES = {
   language: ['es', 'en'],
   mobile: ['hide', 'show'],
 }
-const DEFAULTS = { mode: 'auto', position: 'bottom-right', size: 'small', style: 'full', opacity: 'normal', language: 'es', mobile: 'hide' }
+const DEFAULTS = { mode: 'fondo', position: 'bottom-right', size: 'small', style: 'full', opacity: 'normal', language: 'es', mobile: 'hide' }
 // the Spanish words a person may type for a setting or a value
 const KEY_ALIAS = { modo: 'mode', posicion: 'position', 'posición': 'position', sitio: 'position', 'tamaño': 'size', tamano: 'size', estilo: 'style', opacidad: 'opacity', fondo: 'opacity', idioma: 'language', movil: 'mobile', 'móvil': 'mobile' }
 const VALUE_ALIAS = {

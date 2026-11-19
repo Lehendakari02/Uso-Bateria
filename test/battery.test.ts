@@ -25,7 +25,7 @@ const engine = (on: any, week: () => number) => {
   mock.store(on)
 }
 
-test('auto mode (the default): opens a small panel and, shown, sets no theme', async ($, on) => {
+test('auto mode: opens a small panel and, shown, sets no theme', { options: { mode: 'auto' } }, async ($, on) => {
   mock.clock(on, { now: NOW })
   let opened: any = null, sets = 0
   on('ui.open', (_: unknown, e: any) => ((opened = e), { value: { isPlaced: true } }))
@@ -43,7 +43,7 @@ test('auto mode (the default): opens a small panel and, shown, sets no theme', a
 
 })
 
-test('panel mode in the terminal: one line of text', async ($, on) => {
+test('panel mode in the terminal: one line of text', { options: { mode: 'auto' } }, async ($, on) => {
   const clock = mock.clock(on, { now: NOW })
   on('ui.open', () => ({ value: { isPlaced: true } }))
   engine(on, () => 30)
@@ -55,7 +55,7 @@ test('panel mode in the terminal: one line of text', async ($, on) => {
   await term.unmount()
 })
 
-test('fondo mode: the theme is set once, and the battery redraws when usage moves', { options: { mode: 'fondo' } }, async ($, on) => {
+test('fondo mode (the default): the theme is set once, and the battery redraws when usage moves', { options: { mode: 'fondo' } }, async ($, on) => {
   const clock = mock.clock(on, { now: NOW })
   let sets = 0, week = 8
   on('theme.set', () => (sets++, { value: { isDrawn: true, requestId: 'bg' } }))
@@ -118,7 +118,7 @@ test('/bateria-mover shows the hint, and typed again calls the move off', { opti
   await ui.unmount()
 })
 
-test('panel mode: the first message opens the panel again, once', async ($, on) => {
+test('panel mode: the first message opens the panel again, once', { options: { mode: 'auto' } }, async ($, on) => {
   mock.clock(on, { now: NOW })
   let opens = 0
   on('ui.open', () => (opens++, { value: { isPlaced: true } }))
@@ -131,7 +131,7 @@ test('panel mode: the first message opens the panel again, once', async ($, on) 
   expect(opens).toBe(2)
 })
 
-test('auto mode: where the app shows no panel, the card goes on the background', async ($, on) => {
+test('auto mode: where the app shows no panel, the card goes on the background', { options: { mode: 'auto' } }, async ($, on) => {
   mock.clock(on, { now: NOW })
   let sets = 0
   on('ui.open', () => ({ value: { isPlaced: false, reason: 'no panes here' } }))
@@ -144,7 +144,7 @@ test('auto mode: where the app shows no panel, the card goes on the background',
   await ui.unmount()
 })
 
-test('/bateria-ajustes lists the settings and changes them, in Spanish words too', async ($, on) => {
+test('/bateria-ajustes lists the settings and changes them, in Spanish words too', { options: { mode: 'auto' } }, async ($, on) => {
   const clock = mock.clock(on, { now: NOW })
   on('ui.open', () => ({ value: { isPlaced: true } }))
   on('theme.set', () => ({ value: { isDrawn: true, requestId: 'bg' } }))
@@ -169,7 +169,7 @@ test('/bateria-ajustes lists the settings and changes them, in Spanish words too
   expect(reset).toContain('borrados')
 })
 
-test('/bateria-diagnostico says what the app answered', async ($, on) => {
+test('/bateria-diagnostico says what the app answered', { options: { mode: 'auto' } }, async ($, on) => {
   mock.clock(on, { now: NOW })
   on('ui.open', () => ({ value: { isPlaced: false, reason: 'no panes here' } }))
   on('theme.set', () => ({ value: { isDrawn: false, reason: 'no look drawn' } }))
@@ -187,7 +187,7 @@ test('before any usage figures, the background shows a waiting card', () => {
   expect(svg).toContain('esperando datos de uso')
 })
 
-test('a window that attaches later gets the panel', async ($, on) => {
+test('a window that attaches later gets the panel', { options: { mode: 'auto' } }, async ($, on) => {
   mock.clock(on, { now: NOW })
   let placed = false, opens = 0
   on('ui.open', () => (opens++, { value: placed ? { isPlaced: true } : { isPlaced: false, reason: 'no-surface' } }))
@@ -203,7 +203,7 @@ test('a window that attaches later gets the panel', async ($, on) => {
   expect(text).toContain('mini panel mostrado: sí')
 })
 
-test('in a side panel the card is centred', async ($, on) => {
+test('in a side panel the card is centred', { options: { mode: 'auto' } }, async ($, on) => {
   mock.clock(on, { now: NOW })
   on('ui.open', () => ({ value: { isPlaced: true } }))
   engine(on, () => 30)

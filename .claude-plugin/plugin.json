@@ -1,24 +1,24 @@
 {
   "name": "uso-bateria",
   "displayName": "Uso Batería",
-  "version": "2.2.4",
-  "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en un mini panel de Claude Desktop",
+  "version": "2.3.0",
+  "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en Claude Code de la app de escritorio",
   "userConfig": {
     "mode": {
       "type": "string",
       "title": "Modo",
-      "description": "auto: el mini panel y, si la app no lo muestra, el fondo de la ventana. panel: siempre el mini panel. fondo: siempre el fondo. También con /bateria-ajustes modo …",
+      "description": "fondo: la batería pintada en el fondo de la ventana, junto al chat (se mueve con /bateria-mover). panel: en un panel de la app. auto: el panel y, si la app no lo muestra, el fondo. También con /bateria-ajustes modo …",
       "options": [
         "auto",
         "panel",
         "fondo"
       ],
-      "default": "auto"
+      "default": "fondo"
     },
     "position": {
       "type": "string",
       "title": "Posición (en el fondo)",
-      "description": "Dónde va la batería cuando está en el fondo, en el hueco libre junto al chat. Las de abajo quedan a la altura de la caja de escribir. /bateria-mover la coloca con un clic",
+      "description": "Dónde va la batería en el fondo: a la derecha o a la izquierda del chat, sin quedar tapada por el panel derecho de la app. /bateria-mover la coloca con un clic",
       "options": [
         "abajo-derecha",
         "derecha",
