@@ -8,7 +8,7 @@
       "name": "uso-bateria",
       "source": "./",
       "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en Claude Code de la app de escritorio",
-      "version": "2.3.2",
+      "version": "2.3.3",
       "category": "productivity",
       "author": {
         "name": "Lehendakari02"

@@ -430,6 +430,7 @@ export const register = (on, options) => {
       `  mini panel pedido → la app contestó: ${diag.open}`,
       `  mini panel mostrado: ${paneShown ? 'sí' : 'no'} · paneles: ${panes}`,
       `  fondo pedido → la app contestó: ${diag.theme}`,
+      ...(/isDrawn":false/.test(diag.theme) ? ['    (la app contesta así al empezar la sesión, antes de conectarse para dibujar: si ves la batería, todo va bien)'] : []),
       `  datos de uso: ${usage}`,
       `  últimos límites recordados: ${remembered}`,
     ].join('\n') }
