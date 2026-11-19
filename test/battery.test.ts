@@ -186,3 +186,19 @@ test('before any usage figures, the background shows a waiting card', () => {
   const svg = scene(null, NOW, 'bottom-right', 'small', 'normal', 'es', 'full')
   expect(svg).toContain('esperando datos de uso')
 })
+
+test('a window that attaches later gets the panel', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  let placed = false, opens = 0
+  on('ui.open', () => (opens++, { value: placed ? { isPlaced: true } : { isPlaced: false, reason: 'no-surface' } }))
+  on('theme.set', () => ({ value: { isDrawn: false, requestId: 'backdrop', reason: 'none attached' } }))
+  on('session.attach', (_: unknown, e: any) => ({ clientId: e.clientId ?? 'c1' }))
+  on('ui.panes', () => ({ value: [] }))
+  engine(on, () => 30)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  placed = true
+  await $.session.attach({ surface: 'desktop', clientId: 'c1' } as any)
+  expect(opens).toBe(2)
+  const text = String(((await $.command.run({ command: 'bateria-diagnostico', args: '' } as any)) as any)?.text)
+  expect(text).toContain('mini panel mostrado: sí')
+})

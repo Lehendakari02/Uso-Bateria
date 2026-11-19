@@ -445,6 +445,18 @@ export const register = (on, options) => {
     }
     return next(e)
   })
+  // a window that joins later (the app attaching to a session it was not drawing): ask for the panel again
+  on('session.attach', async ($, e, next) => {
+    try {
+      const s = await settingsOf($, options)
+      if (s.mode !== 'fondo') {
+        const r = await openPane($, s.language).catch(err => ({ error: String(err?.message ?? err) })); diag.open = seen(r)
+        if (r?.isPlaced === true) paneShown = true
+      }
+      $.ui.invalidate('ui.render')
+    } catch {}
+    return next(e)
+  })
   // the figures moved (after each answer, or a window moved a point): draw the battery again
   on('session.measure', ($, e, next) => { $.ui.invalidate('ui.render'); return next(e) })
 
