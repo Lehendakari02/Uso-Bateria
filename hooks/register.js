@@ -397,14 +397,17 @@ export const register = (on, options) => {
     return next(e)
   })
   // an app may leave a pane opened unasked undrawn; one opened with the person's first message is theirs
+  // whatever happens here, the message always goes on: next(e) runs outside the try
   on('prompt.submit', async ($, e, next) => {
     if (!askedOpen) {
       askedOpen = true
-      const s = await settingsOf($, options)
-      if (s.mode !== 'fondo') {
-        const r = await openPane($, s.language).catch(() => null)
-        if (r?.isPlaced === true && !paneShown) { paneShown = true; $.ui.invalidate('ui.render') }
-      }
+      try {
+        const s = await settingsOf($, options)
+        if (s.mode !== 'fondo') {
+          const r = await openPane($, s.language).catch(() => null)
+          if (r?.isPlaced === true && !paneShown) { paneShown = true; $.ui.invalidate('ui.render') }
+        }
+      } catch {}
     }
     return next(e)
   })
