@@ -1,12 +1,12 @@
 {
   "name": "uso-bateria",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en un mini panel de Claude Desktop",
   "userConfig": {
     "mode": {
       "type": "string",
-      "title": "Mode",
-      "description": "auto: the small panel, or the window background where the app shows no panel. panel: always the small panel. fondo: always the background. Also /bateria-ajustes modo …",
+      "title": "Modo",
+      "description": "auto: el mini panel y, si la app no lo muestra, el fondo de la ventana. panel: siempre el mini panel. fondo: siempre el fondo. También con /bateria-ajustes modo …",
       "options": [
         "auto",
         "panel",
@@ -16,8 +16,8 @@
     },
     "position": {
       "type": "string",
-      "title": "Position",
-      "description": "On the background: where the card sits beside the chat column; the bottom spots sit level with the prompt box. /bateria-mover places it with a click",
+      "title": "Posición (en el fondo)",
+      "description": "Dónde va la batería cuando está en el fondo, en el hueco libre junto al chat. Las de abajo quedan a la altura de la caja de escribir. /bateria-mover la coloca con un clic",
       "options": [
         "bottom-right",
         "right",
@@ -30,8 +30,8 @@
     },
     "size": {
       "type": "string",
-      "title": "Size",
-      "description": "How big the battery card is",
+      "title": "Tamaño",
+      "description": "tiny 180 px · small 220 px · medium 260 px · large 300 px · xlarge 340 px de ancho en el mini panel. También con /bateria-ajustes tamaño …",
       "options": [
         "tiny",
         "small",
@@ -43,8 +43,8 @@
     },
     "style": {
       "type": "string",
-      "title": "Style",
-      "description": "compact: one low strip; full: the original tall card",
+      "title": "Estilo",
+      "description": "full: el recuadro completo. compact: una tira baja más discreta",
       "options": [
         "compact",
         "full"
@@ -53,8 +53,8 @@
     },
     "opacity": {
       "type": "string",
-      "title": "Card background",
-      "description": "How solid the card's dark background is",
+      "title": "Fondo del recuadro",
+      "description": "solid: opaco. normal: casi opaco. glass: deja ver un poco lo de detrás",
       "options": [
         "solid",
         "normal",
@@ -64,8 +64,8 @@
     },
     "language": {
       "type": "string",
-      "title": "Language",
-      "description": "Language of the card's text: es (Spanish) or en (English)",
+      "title": "Idioma",
+      "description": "Idioma de los textos del recuadro: es (español) o en (inglés)",
       "options": [
         "es",
         "en"
@@ -74,8 +74,8 @@
     },
     "mobile": {
       "type": "string",
-      "title": "On the phone",
-      "description": "Also show the card in the Claude mobile app (it sits behind the messages there)",
+      "title": "En el móvil",
+      "description": "hide: oculta en la app del móvil. show: mostrarla también allí",
       "options": [
         "hide",
         "show"
@@ -86,5 +86,12 @@
   "license": "MIT",
   "author": {
     "name": "Lehendakari02"
-  }
+  },
+  "keywords": [
+    "batería",
+    "uso",
+    "límite semanal",
+    "Clawd",
+    "panel"
+  ]
 }

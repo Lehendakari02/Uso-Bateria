@@ -6,7 +6,20 @@
   "plugins": [
     {
       "name": "uso-bateria",
-      "source": "./"
+      "source": "./",
+      "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en un mini panel de Claude Desktop",
+      "version": "2.2.1",
+      "category": "productivity",
+      "author": {
+        "name": "Lehendakari02"
+      },
+      "keywords": [
+        "batería",
+        "uso",
+        "límite semanal",
+        "Clawd",
+        "panel"
+      ]
     }
   ],
   "description": "Uso-Bateria: Clawd y una batería pixelada con tu uso semanal de Claude, en un mini panel de Claude Desktop"
