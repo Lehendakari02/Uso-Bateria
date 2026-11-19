@@ -279,13 +279,20 @@ const VALUE_ALIAS = {
   ocultar: 'hide', oculto: 'hide', mostrar: 'show', visible: 'show', 'español': 'es', espanol: 'es', 'inglés': 'en', ingles: 'en',
 }
 const SETTINGS = 'settings' // $.store: what /bateria-ajustes changed
+// how each value reads in Spanish, as the settings page and /bateria-ajustes show it
+const ES_WORD = {
+  'bottom-right': 'abajo-derecha', right: 'derecha', 'top-right': 'arriba-derecha', 'bottom-left': 'abajo-izquierda', left: 'izquierda', 'top-left': 'arriba-izquierda',
+  tiny: 'diminuto', small: 'pequeño', medium: 'mediano', large: 'grande', xlarge: 'muy-grande',
+  full: 'completo', compact: 'compacto', solid: 'sólido', glass: 'cristal', es: 'español', en: 'inglés', hide: 'ocultar', show: 'mostrar',
+}
+const shown = (lang, v) => (lang === 'en' ? v : ES_WORD[v] ?? v)
 const LABEL = { mode: 'modo', position: 'posición', size: 'tamaño', style: 'estilo', opacity: 'opacidad', language: 'idioma', mobile: 'móvil' }
 async function settingsOf($, options) {
   let saved = {}
   try { const v = await $.store.get(SETTINGS); if (v && typeof v === 'object') saved = v } catch {}
   const out = {}
   for (const k of Object.keys(CHOICES)) {
-    const v = saved[k] ?? options?.[k]
+    const raw = saved[k] ?? options?.[k], v = VALUE_ALIAS[raw] ?? raw // the settings page stores Spanish words
     out[k] = CHOICES[k].includes(v) ? v : DEFAULTS[k]
   }
   return out
@@ -359,7 +366,7 @@ export const register = (on, options) => {
     for (let n = 0; n + 1 < words.length; n += 2) {
       const key = KEY_ALIAS[words[n]] ?? words[n], value = VALUE_ALIAS[words[n + 1]] ?? words[n + 1]
       if (!CHOICES[key]) { errors.push(sayIn(l0, `No conozco el ajuste "${words[n]}".`, `Unknown setting "${words[n]}".`)); continue }
-      if (!CHOICES[key].includes(value)) { errors.push(sayIn(l0, `"${words[n + 1]}" no vale para ${LABEL[key]}: usa ${CHOICES[key].join(', ')}.`, `"${words[n + 1]}" is not a ${key}: use ${CHOICES[key].join(', ')}.`)); continue }
+      if (!CHOICES[key].includes(value)) { errors.push(sayIn(l0, `"${words[n + 1]}" no vale para ${LABEL[key]}: usa ${CHOICES[key].map(v => shown(l0, v)).join(', ')}.`, `"${words[n + 1]}" is not a ${key}: use ${CHOICES[key].join(', ')}.`)); continue }
       saved[key] = value
     }
     if (words.length % 2 === 1) errors.push(sayIn(l0, `Falta el valor de "${words[words.length - 1]}".`, `"${words[words.length - 1]}" needs a value.`))
@@ -375,9 +382,9 @@ export const register = (on, options) => {
       }
     }
     $.ui.invalidate('ui.render')
-    const list = Object.keys(CHOICES).map(k => `  ${sayIn(l, LABEL[k], k)}: ${s[k]}   (${CHOICES[k].join(' · ')})`).join('\n')
+    const list = Object.keys(CHOICES).map(k => `  ${sayIn(l, LABEL[k], k)}: ${shown(l, s[k])}   (${CHOICES[k].map(v => shown(l, v)).join(' · ')})`).join('\n')
     const help = sayIn(l,
-      'Para cambiar uno: /bateria-ajustes tamaño medium (o grande, mediano, pequeño…). Varios a la vez: /bateria-ajustes tamaño large estilo compact. Para volver a los del plugin: /bateria-ajustes reset.',
+      'Para cambiar uno: /bateria-ajustes tamaño mediano. Varios a la vez: /bateria-ajustes tamaño grande estilo compacto. Para volver a los del plugin: /bateria-ajustes reset.',
       'To change one: /bateria-ajustes size medium. Several at once: /bateria-ajustes size large style compact. Back to the plugin options: /bateria-ajustes reset.')
     return { text: [...errors, sayIn(l, 'Ajustes de la batería:', 'Battery settings:'), list, help].join('\n') }
   })
@@ -405,7 +412,7 @@ export const register = (on, options) => {
     try { panes = JSON.stringify(await $.ui.panes()) } catch (err) { panes = 'error: ' + String(err?.message ?? err) }
     return { text: [
       'Diagnóstico de la batería:',
-      `  modo: ${s.mode} · tamaño: ${s.size} · estilo: ${s.style} · posición: ${s.position}`,
+      `  modo: ${s.mode} · tamaño: ${shown('es', s.size)} · estilo: ${shown('es', s.style)} · posición: ${shown('es', s.position)}`,
       `  mini panel pedido → la app contestó: ${diag.open}`,
       `  mini panel mostrado: ${paneShown ? 'sí' : 'no'} · paneles: ${panes}`,
       `  fondo pedido → la app contestó: ${diag.theme}`,

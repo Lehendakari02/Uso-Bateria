@@ -177,7 +177,7 @@ Los cambios se ven al momento y se guardan para las próximas sesiones. Para vol
 | `posición` (en el fondo) | `abajo-derecha`, `derecha`, `arriba-derecha`, `abajo-izquierda`, `izquierda`, `arriba-izquierda` | `abajo-derecha` |
 | `tamaño` | `diminuto`, `pequeño`, `mediano`, `grande`, `muy-grande` | `pequeño` |
 | `estilo` | `completo`, `compacto` | `completo` |
-| `opacidad` (del recuadro) | `solid`, `normal`, `cristal` | `normal` |
+| `opacidad` (del recuadro) | `sólido`, `normal`, `cristal` | `normal` |
 | `idioma` | `español`, `inglés` | `español` |
 | `móvil` | `ocultar`, `mostrar` | `ocultar` |
 

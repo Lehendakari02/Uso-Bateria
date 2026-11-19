@@ -1,6 +1,6 @@
 {
   "name": "uso-bateria",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en un mini panel de Claude Desktop",
   "userConfig": {
     "mode": {
@@ -19,68 +19,68 @@
       "title": "Posición (en el fondo)",
       "description": "Dónde va la batería cuando está en el fondo, en el hueco libre junto al chat. Las de abajo quedan a la altura de la caja de escribir. /bateria-mover la coloca con un clic",
       "options": [
-        "bottom-right",
-        "right",
-        "top-right",
-        "bottom-left",
-        "left",
-        "top-left"
+        "abajo-derecha",
+        "derecha",
+        "arriba-derecha",
+        "abajo-izquierda",
+        "izquierda",
+        "arriba-izquierda"
       ],
-      "default": "bottom-right"
+      "default": "abajo-derecha"
     },
     "size": {
       "type": "string",
       "title": "Tamaño",
-      "description": "tiny 180 px · small 220 px · medium 260 px · large 300 px · xlarge 340 px de ancho en el mini panel. También con /bateria-ajustes tamaño …",
+      "description": "Ancho en el mini panel: diminuto 180 px · pequeño 220 px · mediano 260 px · grande 300 px · muy-grande 340 px. También con /bateria-ajustes tamaño …",
       "options": [
-        "tiny",
-        "small",
-        "medium",
-        "large",
-        "xlarge"
+        "diminuto",
+        "pequeño",
+        "mediano",
+        "grande",
+        "muy-grande"
       ],
-      "default": "small"
+      "default": "pequeño"
     },
     "style": {
       "type": "string",
       "title": "Estilo",
-      "description": "full: el recuadro completo. compact: una tira baja más discreta",
+      "description": "completo: el recuadro entero. compacto: una tira baja más discreta",
       "options": [
-        "compact",
-        "full"
+        "completo",
+        "compacto"
       ],
-      "default": "full"
+      "default": "completo"
     },
     "opacity": {
       "type": "string",
       "title": "Fondo del recuadro",
-      "description": "solid: opaco. normal: casi opaco. glass: deja ver un poco lo de detrás",
+      "description": "sólido: opaco. normal: casi opaco. cristal: deja ver un poco lo de detrás",
       "options": [
-        "solid",
+        "sólido",
         "normal",
-        "glass"
+        "cristal"
       ],
       "default": "normal"
     },
     "language": {
       "type": "string",
       "title": "Idioma",
-      "description": "Idioma de los textos del recuadro: es (español) o en (inglés)",
+      "description": "Idioma de los textos del recuadro",
       "options": [
-        "es",
-        "en"
+        "español",
+        "inglés"
       ],
-      "default": "es"
+      "default": "español"
     },
     "mobile": {
       "type": "string",
       "title": "En el móvil",
-      "description": "hide: oculta en la app del móvil. show: mostrarla también allí",
+      "description": "ocultar: no sale en la app del móvil. mostrar: sale también allí",
       "options": [
-        "hide",
-        "show"
+        "ocultar",
+        "mostrar"
       ],
-      "default": "hide"
+      "default": "ocultar"
     }
   },
   "license": "MIT",
