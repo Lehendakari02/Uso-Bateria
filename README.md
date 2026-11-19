@@ -45,6 +45,7 @@ Además:
 - **Arriba a la derecha** sale cuándo se renueva el límite semanal (`renueva sáb 10:00`, o `renueva hoy 10:00` si es el mismo día).
 - **En la fila de abajo** (`5H`) está el límite de 5 horas y a qué hora se recarga (`60% · recarga 13:00`).
 - Los números se actualizan después de cada respuesta de Claude, y el reloj cada minuto.
+- Al abrir una sesión nueva, Claude todavía no ha dicho tus límites (llegan con su primera respuesta): mientras tanto la batería muestra los **últimos que vio**, si aún no se han renovado, o *"esperando datos de uso…"*. Solo quien usa Claude con una clave de API, sin límites de plan, ve el **contexto** de la conversación (cabecera `CONTEXTO`).
 
 ## Tres modos
 

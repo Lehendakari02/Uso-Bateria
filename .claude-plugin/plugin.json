@@ -1,7 +1,7 @@
 {
   "name": "uso-bateria",
   "displayName": "Uso Batería",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en Claude Code de la app de escritorio",
   "userConfig": {
     "mode": {

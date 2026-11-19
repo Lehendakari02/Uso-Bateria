@@ -225,3 +225,47 @@ test('the settings page Spanish words work: pequeño, compacto, abajo-izquierda'
   expect(text).toContain('estilo: compacto')
   expect(text).toContain('posición: abajo-izquierda')
 })
+
+const noLimits = { context: { window: 200000, percent: 7 }, rateLimits: [] }
+const lastLimits = (resetsIn: number) => ({ lastLimits: { at: NOW, limits: [{ kind: 'seven_day', percentUsed: 98, resetsAt: new Date(NOW + resetsIn).toISOString() }] } })
+
+test('reopened before the first answer: the remembered week shows, not the context', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  mock.store(on, lastLimits(86400e3))
+  on('session.usage', () => ({ value: noLimits }))
+  on('theme.set', () => ({ value: { isDrawn: true, requestId: 'bg' } }))
+  on('session.start', (_: unknown, e: any) => ({ cwd: e.cwd }))
+  on('command.register', () => ({ value: undefined }))
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  const ui = await $.ui.mount({ ...BACKDROP, surface: 'desktop' })
+  const svg = await source(ui)
+  expect(svg).toContain('USO SEMANAL')
+  expect(svg).not.toContain('CONTEXTO')
+  await ui.unmount()
+})
+
+test('remembered limits that renewed since: the waiting card, never a wrong figure', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  mock.store(on, lastLimits(-3600e3))
+  on('session.usage', () => ({ value: noLimits }))
+  on('theme.set', () => ({ value: { isDrawn: true, requestId: 'bg' } }))
+  on('session.start', (_: unknown, e: any) => ({ cwd: e.cwd }))
+  on('command.register', () => ({ value: undefined }))
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  const ui = await $.ui.mount({ ...BACKDROP, surface: 'desktop' })
+  expect(await source(ui)).toContain('esperando datos de uso')
+  await ui.unmount()
+})
+
+test('never had plan limits (an API key): the context window', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  mock.store(on)
+  on('session.usage', () => ({ value: noLimits }))
+  on('theme.set', () => ({ value: { isDrawn: true, requestId: 'bg' } }))
+  on('session.start', (_: unknown, e: any) => ({ cwd: e.cwd }))
+  on('command.register', () => ({ value: undefined }))
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  const ui = await $.ui.mount({ ...BACKDROP, surface: 'desktop' })
+  expect(await source(ui)).toContain('CONTEXTO')
+  await ui.unmount()
+})

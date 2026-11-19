@@ -286,6 +286,28 @@ async function settingsOf($, options) {
 }
 const sayIn = (lang, es, en) => (lang === 'en' ? en : es)
 
+// ---------- the usage figures, with the last plan limits remembered ----------
+// A session reports its plan limits only after its first answer, so a reopened app would show nothing, or the
+// context window as if it were the week. The last limits seen are kept, and shown until their window renews.
+const LAST = 'lastLimits' // $.store: { limits, at }, the last plan limits a session reported
+async function usageOf($) {
+  let u = null
+  try { u = await $.session.usage() } catch {}
+  if (!u) return null
+  if ((u.rateLimits ?? []).length > 0) return u
+  let last = null
+  try { last = await $.store.get(LAST) } catch {}
+  if (!last || !Array.isArray(last.limits)) return u // never had plan limits (an API key): the context window it is
+  const now = await $.clock.now()
+  const live = last.limits.filter(r => r && Number.isFinite(Date.parse(r.resetsAt)) && Date.parse(r.resetsAt) > now)
+  // limits seen before but renewed since: wait for the first answer rather than show a stale or wrong figure
+  return live.length > 0 ? { ...u, rateLimits: live } : { ...u, rateLimits: [], waitingLimits: true }
+}
+async function rememberLimits($, limits) {
+  if (!Array.isArray(limits) || limits.length === 0) return
+  try { await $.store.set(LAST, { limits, at: await $.clock.now() }) } catch {}
+}
+
 // ---------- the mod ----------
 const SCENE = 'uso-bateria'
 const PANE = 'bateria'
@@ -318,6 +340,7 @@ export const register = (on, options) => {
       if (s.mode === 'auto' && !paneShown) { diag.theme = seen(await setBackdrop($).catch(err => ({ error: String(err?.message ?? err) }))); fondoOn = true }
     }
     await $.store.delete(MOVING) // a move left waiting in an earlier session is dropped
+    try { const u0 = await $.session.usage(); await rememberLimits($, u0?.rateLimits) } catch {}
     const l = s.language
     await $.command.register({ name: 'bateria', description: sayIn(l, 'Abre la batería si la cerraste', 'Open the battery if you closed it') })
     await $.command.register({ name: 'bateria-ajustes', description: sayIn(l, 'Cambia la batería: tamaño, posición, estilo, modo, idioma…', 'Change the battery: size, position, style, mode, language…'), argumentHint: sayIn(l, '[ajuste valor]', '[setting value]') })
@@ -395,6 +418,8 @@ export const register = (on, options) => {
       const u = await $.session.usage()
       if (u) usage = (u.rateLimits ?? []).map(r => `${r.kind}: ${Math.round(100 - r.percentUsed)}% queda`).join(', ') || `sin límites de plan; contexto usado ${u.context?.percent ?? '?'}%`
     } catch (err) { usage = 'error: ' + String(err?.message ?? err) }
+    let remembered = 'ninguno'
+    try { const last = await $.store.get(LAST); if (last?.limits?.length) remembered = last.limits.map(r => `${r.kind}: ${Math.round(100 - r.percentUsed)}% queda, renueva ${r.resetsAt}`).join(', ') } catch {}
     let panes = '?'
     try { panes = JSON.stringify(await $.ui.panes()) } catch (err) { panes = 'error: ' + String(err?.message ?? err) }
     return { text: [
@@ -404,6 +429,7 @@ export const register = (on, options) => {
       `  mini panel mostrado: ${paneShown ? 'sí' : 'no'} · paneles: ${panes}`,
       `  fondo pedido → la app contestó: ${diag.theme}`,
       `  datos de uso: ${usage}`,
+      `  últimos límites recordados: ${remembered}`,
     ].join('\n') }
   })
   on('command.run', { command: 'bateria-reset' }, async $ => {
@@ -452,16 +478,19 @@ export const register = (on, options) => {
     return next(e)
   })
   // the figures moved (after each answer, or a window moved a point): draw the battery again
-  on('session.measure', ($, e, next) => { $.ui.invalidate('ui.render'); return next(e) })
+  on('session.measure', async ($, e, next) => {
+    await rememberLimits($, e.rateLimits)
+    $.ui.invalidate('ui.render')
+    return next(e)
+  })
 
   // the panel: the card alone, at a fixed width, wherever the app seats the pane
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Text, Svg } = $.ui.resolve(e)
     const s = await settingsOf($, options), l = s.language
-    let u = null
-    try { u = await $.session.usage() } catch {}
+    const u = await usageOf($)
     const now = await $.clock.now()
-    if (!u) return Text({ dimColor: true, children: sayIn(l, 'La batería aparece tras la primera respuesta.', 'The battery shows after the first answer.') })
+    if (!u || u.waitingLimits) return Text({ dimColor: true, children: sayIn(l, 'La batería aparece tras la primera respuesta.', 'The battery shows after the first answer.') })
     if (e.surface === 'terminal' || (e.surface === 'mobile' && s.mobile !== 'show')) return Text({ children: cardLine(u, now, l) })
     const svg = Svg({ source: cardSvg(u, now, s.opacity, l, s.style), alt: (TEXT[l] ?? TEXT.es).alt, width: PANEL_W[s.size], isInteractive: true })
     // in a side panel (the app's dock) the card sits centred near the top; in a small widget it fills it
@@ -476,8 +505,7 @@ export const register = (on, options) => {
     // a phone has no free strip beside the chat: there the card would sit behind the messages, so it shows
     // on the desktop app only, unless the person turns it on for the phone too
     if (e.surface !== 'desktop' && !(e.surface === 'mobile' && s.mobile === 'show')) return next(e)
-    let u = null
-    try { u = await $.session.usage() } catch {} // no figures yet: nothing drawn
+    const got = await usageOf($), u = got && !got.waitingLimits ? got : null // no figures yet: the waiting card
     // a spot chosen with /bateria-mover holds until the person picks another position
     let place = null, moving = false
     try { const p = await $.store.get(PLACE); if (p && typeof p.fx === 'number' && p.position === s.position) place = p } catch {}
