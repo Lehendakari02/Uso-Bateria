@@ -462,14 +462,16 @@ export const register = (on, options) => {
 
   // the panel: the card alone, at a fixed width, wherever the app seats the pane
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
-    const { Text, Svg } = $.ui.resolve(e)
+    const { Box, Text, Svg } = $.ui.resolve(e)
     const s = await settingsOf($, options), l = s.language
     let u = null
     try { u = await $.session.usage() } catch {}
     const now = await $.clock.now()
     if (!u) return Text({ dimColor: true, children: sayIn(l, 'La batería aparece tras la primera respuesta.', 'The battery shows after the first answer.') })
     if (e.surface === 'terminal' || (e.surface === 'mobile' && s.mobile !== 'show')) return Text({ children: cardLine(u, now, l) })
-    return Svg({ source: cardSvg(u, now, s.opacity, l, s.style), alt: (TEXT[l] ?? TEXT.es).alt, width: PANEL_W[s.size], isInteractive: true })
+    const svg = Svg({ source: cardSvg(u, now, s.opacity, l, s.style), alt: (TEXT[l] ?? TEXT.es).alt, width: PANEL_W[s.size], isInteractive: true })
+    // in a side panel (the app's dock) the card sits centred near the top; in a small widget it fills it
+    return e.props.placement === 'widget' ? svg : Box({ flexDirection: 'column', alignItems: 'center', paddingTop: 1, children: [svg] })
   })
 
   // the background: the card painted in the window's backdrop (mode "fondo", or "auto" where no panel shows)

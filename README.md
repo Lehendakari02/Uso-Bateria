@@ -66,22 +66,16 @@ Para cambiar de modo: `/bateria-ajustes modo panel` (o `auto`, `fondo`). Se apli
 
 Necesitas **Claude Desktop** (la app de escritorio). Elige la forma que te resulte más cómoda; todas instalan lo mismo.
 
-### Opción 1: desde la app, dentro de Claude Code
+### Opción 1: desde la app, con botones
 
-> ⚠️ **Hazlo desde una sesión de Claude Code**, no desde la página **Plugins** del menú de la izquierda. Esa página instala plugins para las conversaciones normales, y ahí la batería no se ve.
-
-1. Abre la pestaña **Code** y empieza una sesión en una carpeta de tu ordenador.
-2. En la caja donde escribes, pulsa el botón **+** y entra en **Plugins**.
-3. Pulsa **Añadir** (arriba a la derecha) → **Añadir marketplace** (*Add marketplace*) y escribe:
+1. Abre la página de **Plugins**: en el menú de la izquierda, o con el botón **+** de la caja donde escribes.
+2. Pulsa el botón **Añadir**, arriba a la derecha (al lado del embudo). **No uses el buscador:** solo busca en el catálogo oficial y este plugin no sale ahí.
+3. En el menú que se abre, elige **Añadir marketplace** (la última opción; en inglés, *Add marketplace*) y escribe:
    ```
    Lehendakari02/Uso-Bateria
    ```
-   **No uses el buscador:** solo busca en el catálogo oficial y este plugin no sale ahí.
 4. Aparece la tarjeta **Uso bateria**: pulsa el botón **+** para instalarla (**Probar** solo abre un chat de prueba).
-5. Elige los ajustes, o deja los de por defecto.
-6. **Abre una sesión nueva de Claude Code** y escribe cualquier mensaje. La batería aparece en una esquina; si no, escribe `/bateria`.
-
-> Si no ves la batería, la forma más segura de instalarla es la **opción 3** (terminal). Instala el plugin para todas tus sesiones de Claude Code, también las de la app.
+5. **Abre una sesión nueva de Claude Code** en una carpeta de tu ordenador y escribe cualquier mensaje. La batería aparece en un panel; si no, escribe `/bateria`.
 
 ### Opción 2: con un comando en Claude Code
 
@@ -126,6 +120,20 @@ En una sesión de Claude Code **en tu ordenador** (no en la nube), escribe algo 
 Claude ejecutará los comandos de la opción 3 y te pedirá permiso antes.
 
 En todos los casos, **abre una sesión nueva** al terminar.
+
+## Actualizar
+
+Cuando haya una versión nueva, la app la descarga sola al refrescar el marketplace. Para forzarlo desde la terminal:
+
+```bash
+claude plugin marketplace update uso-bateria
+```
+
+```bash
+claude plugin update uso-bateria@uso-bateria
+```
+
+Después abre una sesión nueva. Para saber qué versión tienes: `claude plugin list`. Si te faltan comandos de los que salen aquí (por ejemplo `/bateria-ajustes`), tienes una versión antigua.
 
 ## Comandos
 

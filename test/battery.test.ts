@@ -202,3 +202,15 @@ test('a window that attaches later gets the panel', async ($, on) => {
   const text = String(((await $.command.run({ command: 'bateria-diagnostico', args: '' } as any)) as any)?.text)
   expect(text).toContain('mini panel mostrado: sí')
 })
+
+test('in a side panel the card is centred', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  on('ui.open', () => ({ value: { isPlaced: true } }))
+  engine(on, () => 30)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  const ui = await $.ui.mount({ ...PANE, props: { ...PANE.props, placement: 'dock', anchoredEdges: undefined }, surface: 'desktop' } as any)
+  const box = await ui.find({ type: 'Box' })
+  expect(box?.props?.alignItems).toBe('center')
+  expect((await ui.find({ type: 'Svg' }))?.props?.width).toBe(220)
+  await ui.unmount()
+})
