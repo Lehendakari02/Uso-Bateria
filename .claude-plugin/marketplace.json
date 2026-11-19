@@ -8,7 +8,7 @@
       "name": "uso-bateria",
       "source": "./",
       "description": "Clawd junto a una batería pixelada con tu uso semanal de Claude, en un mini panel de Claude Desktop",
-      "version": "2.2.3",
+      "version": "2.2.4",
       "category": "productivity",
       "author": {
         "name": "Lehendakari02"
