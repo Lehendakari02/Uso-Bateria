@@ -293,3 +293,23 @@ test('a gateway spend limit shows as LÍMITE, not as the context', () => {
   expect(svg).toContain('LÍMITE')
   expect(svg).not.toContain('CONTEXTO')
 })
+
+test('limits seen in one session are remembered in the next, before its first answer', async ($, on) => {
+  const clock = mock.clock(on, { now: NOW })
+  mock.store(on)
+  let live = true
+  on('session.usage', () => ({ value: live ? usage(98) : noLimits }))
+  on('theme.set', () => ({ value: { isDrawn: true, requestId: 'bg' } }))
+  on('session.start', (_: unknown, e: any) => ({ cwd: e.cwd }))
+  on('session.measure', (_: unknown, e: any) => ({ changed: e.changed }))
+  on('command.register', () => ({ value: undefined }))
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  await $.session.measure({ ...usage(98), changed: ['rateLimits'] } as any)
+  await clock.settle()
+  live = false // the app reopened: no limits until the first answer
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  const ui = await $.ui.mount({ ...BACKDROP, surface: 'desktop' })
+  const svg = await source(ui)
+  expect(svg).toContain('USO SEMANAL')
+  await ui.unmount()
+})
