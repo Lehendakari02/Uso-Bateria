@@ -28,6 +28,7 @@ Clawd, la mascota de Claude, al lado de una **batería pixelada** que te dice cu
 - ✅ En las sesiones de **Claude Code** de la app de escritorio (la pestaña **Code**) que trabajan en una carpeta de **tu ordenador**.
 - ❌ En las **conversaciones normales** de Claude: allí la app no ejecuta el código de los plugins (solo usa sus habilidades y conectores), así que no se puede dibujar nada, ni panel ni fondo.
 - ❌ En la terminal no se dibuja (solo sale una línea de texto con el porcentaje).
+- ❌ En los **Proyectos** (Beta) que se ejecutan en la nube: ni el coordinador ni sus hilos cargan los plugins de tu ordenador (comprobado: `/bateria-diagnostico` no existe allí). Si el proyecto trabaja en una carpeta local, debería salir en esa conversación.
 - ⏳ En las sesiones de Claude Code **en la nube**: el plugin se carga y sus comandos funcionan, pero hoy la app no se conecta a esas sesiones para dibujar mods (ni paneles ni fondos). `/bateria-diagnostico` lo muestra como *"no surface is attached"*. El plugin queda preparado: si la app empieza a conectarse, la batería aparecerá sola.
 
 ## Qué hace Clawd según la batería
